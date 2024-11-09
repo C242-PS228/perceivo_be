@@ -1,23 +1,20 @@
-require("dotenv").config();
-const express = require("express");
+const express = require('express');
+const process = require('process');
+const routes = require('./routes');
 const app = express();
 
+const APP_PORT = process.env.APP_PORT; 
+const APP_ENV = process.env.APP_ENV;
+
+app.listen(APP_PORT || 5000,  APP_ENV === 'production' ? '0.0.0.0' : 'localhost', () => {
+    console.log(`Server running at http://${APP_ENV === 'production' ? '0.0.0.0' : 'localhost' || '0.0.0.0'}:${APP_PORT || 5000}`);
+});
+
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  res.setHeader("Content-Type", "application/json");
-  next();
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.contentType('application/json');
+    next();
 });
 
-app.get("/", (req, res) => {
-  res.json({ message: "Hello from the server!" });
-});
-
-app.listen(process.env.APP_PORT, process.env.APP_HOST, () => {
-  console.log(
-    `Server running on http://${process.env.APP_HOST}:${process.env.APP_PORT}`
-  );
-});
+app.use('/', routes);
