@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const e = require('express');
 require('dotenv').config();
-const JWT_SECRET = process.env.JWT_SECRET;
 
 const baseUrlHandler = (req, res) => {
     res.status(200).json({
@@ -45,7 +44,7 @@ const loginHandler = async (req, res) => {
         });
     }
 
-    const token = jwt.sign({email: user.email}, JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({email: user.email}, 'S3N71VU3001', { expiresIn: '1d' });
 
     res.json({
         status: 'success',
