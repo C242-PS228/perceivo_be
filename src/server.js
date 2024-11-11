@@ -6,11 +6,8 @@ require('dotenv').config();
 
 const app = express();
 
-const APP_PORT = process.env.PORT || 3000; 
-const APP_ENV = process.env.APP_ENV;
-
-app.listen(APP_PORT,  APP_ENV === 'production' ? '0.0.0.0' : 'localhost', () => {
-    console.log(`Server running at http://${APP_ENV === 'production' ? '0.0.0.0' : 'localhost' || '0.0.0.0'}:${APP_PORT || 3000}`);
+app.listen(3000,  '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:3000`);
 });
 
 app.use((req, res, next) => {
