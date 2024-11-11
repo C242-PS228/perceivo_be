@@ -10,7 +10,7 @@ const APP_PORT = process.env.APP_PORT;
 const APP_ENV = process.env.APP_ENV;
 
 app.listen(APP_PORT || 5000,  APP_ENV === 'production' ? '0.0.0.0' : 'localhost', () => {
-    console.log(`Server running at http://${APP_ENV === 'production' ? '0.0.0.0' : 'localhost' || '0.0.0.0'}:${APP_PORT || 5000}`);
+    console.log(`Server running at http://${APP_ENV === 'production' ? '0.0.0.0' : 'localhost' || '0.0.0.0'}:${APP_PORT || 3000}`);
 });
 
 app.use((req, res, next) => {
