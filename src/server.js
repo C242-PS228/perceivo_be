@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 
-const APP_PORT = process.env.PORT || 5000; 
+const APP_PORT = process.env.PORT || 3000; 
 const APP_ENV = process.env.APP_ENV;
 
 app.listen(APP_PORT,  APP_ENV === 'production' ? '0.0.0.0' : 'localhost', () => {
