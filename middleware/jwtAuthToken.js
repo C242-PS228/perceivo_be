@@ -1,4 +1,6 @@
+// eslint-disable-next-line no-undef
 require('dotenv').config();
+// eslint-disable-next-line no-undef
 const jwt = require('jsonwebtoken');
 
 const jwtAuthToken = (req, res, next) => {
@@ -9,8 +11,8 @@ const jwtAuthToken = (req, res, next) => {
 
   jwt.verify(token, 'S3N71VU3001', (err, user) => {
     if (err) {
-      return res.status(403).json({ 
-        status: 'fail', 
+      return res.status(403).json({
+        status: 'fail',
         message: 'Invalid token'
       });
     };
@@ -20,4 +22,5 @@ const jwtAuthToken = (req, res, next) => {
   });
 };
 
+// eslint-disable-next-line no-undef
 module.exports = jwtAuthToken;

@@ -1,5 +1,5 @@
+/* eslint-disable no-undef */
 const express = require('express');
-const process = require('process');
 const routes = require('./routes');
 const bodyParser = require('body-parser');
 require('dotenv').config();
@@ -7,14 +7,14 @@ require('dotenv').config();
 const app = express();
 
 app.listen(3000,  '0.0.0.0', () => {
-    console.log(`Server running at http://0.0.0.0:3000`);
+  console.log('Server running at http://0.0.0.0:3000');
 });
 
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.contentType('application/json');
-    next();
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.contentType('application/json');
+  next();
 });
 
 app.use(bodyParser.json());
