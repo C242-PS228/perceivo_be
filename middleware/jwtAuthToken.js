@@ -7,7 +7,7 @@ const jwtAuthToken = (req, res, next) => {
 
   if (!token) return res.sendStatus(401);
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  jwt.verify(token, 'S3N71VU3001', (err, user) => {
     if (err) {
       return res.status(403).json({ 
         status: 'fail', 
