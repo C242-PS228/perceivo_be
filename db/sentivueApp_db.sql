@@ -1,5 +1,5 @@
-CREATE DATABASE sentivueApp;
-USE sentivueApp;
+CREATE DATABASE sentivue_db;
+USE sentivue_db;
 -- Tabel tb_users
 CREATE TABLE tb_users (
     user_id INT PRIMARY KEY,
