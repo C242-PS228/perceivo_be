@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
-const express = require('express');
-const routes = require('./routes');
-const bodyParser = require('body-parser');
-require('dotenv').config();
+import express from 'express';
+import route from './routes.js';
+import bodyParser from 'body-parser';
+// require('dotenv').config();
 
 const app = express();
 
@@ -16,6 +16,7 @@ app.use((req, res, next) => {
   res.contentType('application/json');
   next();
 });
-
 app.use(bodyParser.json());
-app.use('/', routes);
+
+// development route
+app.use('/dev', route);

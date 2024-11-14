@@ -1,10 +1,9 @@
-/* eslint-disable no-undef */
-const express = require('express');
+import express from 'express';
 const route = express.Router();
-const userHandler = require('../handler/userHandler');
-const sentimentHandler = require('../handler/sentimentHandler');
-const jwtAuthToken = require('../middleware/jwtAuthToken.js');
-const validation = require('../middleware/validation');
+import userHandler from '../handler/userHandler.js';
+import sentimentHandler from '../handler/sentimentHandler.js';
+import jwtAuthToken from '../middleware/jwtAuthToken.js';
+import validation from '../middleware/validation.js';
 
 route.get('/', userHandler.baseUrlHandler);
 route.post('/login', userHandler.loginHandler);
@@ -17,4 +16,4 @@ route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
 // ensure this route always last
 route.all('*', userHandler.missingUrlHandler);
 
-module.exports = route;
+export default route;

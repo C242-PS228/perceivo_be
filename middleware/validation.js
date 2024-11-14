@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
-const validator = require('validator');
-const xss = require('xss');
+import validator from 'validator';
+import xss from 'xss';
 
 const registerInputValidation = (req, res, next) => {
   const { email, password, username, fullname, address } = req.body;
@@ -94,4 +94,6 @@ const registerInputValidation = (req, res, next) => {
   next();
 };
 
-module.exports = { registerInputValidation };
+const validation = { registerInputValidation };
+
+export default validation;

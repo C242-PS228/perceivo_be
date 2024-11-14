@@ -1,9 +1,8 @@
-/* eslint-disable no-undef */
-const users = require('../db/users.js');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+// require('dotenv').config();
+import users from '../db/users.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 const date = new Date();
-require('dotenv').config();
 
 const baseUrlHandler = (req, res) => {
   res.status(200).json({
@@ -98,11 +97,8 @@ const showUsersHandler = (req, res) => {
   });
 };
 
-module.exports = {
-  baseUrlHandler,
-  missingUrlHandler,
-  loginHandler,
-  registerHandler,
-  showUsersHandler,
-  profileHandler,
+const userHandler = {
+  missingUrlHandler, baseUrlHandler, loginHandler, registerHandler, showUsersHandler, profileHandler
 };
+
+export default userHandler;

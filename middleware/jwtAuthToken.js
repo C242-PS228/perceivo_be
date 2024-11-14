@@ -1,7 +1,5 @@
-// eslint-disable-next-line no-undef
-require('dotenv').config();
-// eslint-disable-next-line no-undef
-const jwt = require('jsonwebtoken');
+// require('dotenv').config();
+import jwt from 'jsonwebtoken';
 
 const jwtAuthToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -22,5 +20,4 @@ const jwtAuthToken = (req, res, next) => {
   });
 };
 
-// eslint-disable-next-line no-undef
-module.exports = jwtAuthToken;
+export default jwtAuthToken;
