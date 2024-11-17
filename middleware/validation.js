@@ -1,6 +1,6 @@
-/* eslint-disable no-undef */
 import validator from 'validator';
 import xss from 'xss';
+import platform from '../db/platform.js';
 
 const registerInputValidation = (req, res, next) => {
   const { email, password, username, fullname, address } = req.body;
@@ -94,6 +94,45 @@ const registerInputValidation = (req, res, next) => {
   next();
 };
 
-const validation = { registerInputValidation };
+
+const sentimentValidation = (req, res, next) => {
+  const { link, platformName } = req.body;
+
+  const describePlatform = platform.filter(
+    (platform) => platform.name == platformName
+  );
+
+  if (!link || link.trim() === '') {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Link is required'
+    });
+  }
+
+  if (!platformName || platformName.trim() === '') {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'platform name is required'
+    });
+  }
+
+  if (!describePlatform.length > 0) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'Social Media platform undefined!',
+    });
+  }
+
+  if (!validator.isURL(link)) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'url not valid!',
+    });
+  }
+
+  next();
+};
+
+const validation = { registerInputValidation, sentimentValidation };
 
 export default validation;

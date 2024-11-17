@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import express from 'express';
 import route from './routes.js';
 import bodyParser from 'body-parser';
@@ -16,6 +15,7 @@ app.use((req, res, next) => {
   res.contentType('application/json');
   next();
 });
+
 app.use(bodyParser.json());
 
 // development route

@@ -11,7 +11,11 @@ route.post('/register', validation.registerInputValidation, userHandler.register
 route.get('/profile', jwtAuthToken, userHandler.profileHandler);
 route.get('/users', jwtAuthToken, userHandler.showUsersHandler);
 
-route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
+route.get('/sentiment', sentimentHandler.showAllSentimentHandler);
+route.post('/sentiment', validation.sentimentValidation, sentimentHandler.createSentimentHandler);
+route.get('/sentiment/:id', sentimentHandler.showSentimentHandler);
+
+route.delete('/firebasetest/:id', sentimentHandler.testFirebase);
 
 // ensure this route always last
 route.all('*', userHandler.missingUrlHandler);
