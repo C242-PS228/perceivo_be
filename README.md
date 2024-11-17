@@ -1,7 +1,7 @@
 # Perceivo BE v1.0.0 Beta
 backtest backend : https://sentivuebe1-6dh6x3vy.b4a.run/dev
 
-# Login
+## Login
 ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/login```
 body request :
 ```
@@ -9,7 +9,7 @@ email [string]
 password [string]
 ```
 
-# Register
+## Register
 ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/register```
 body request :
 ```
@@ -20,7 +20,7 @@ fullname [string]
 address [string]
 ```
 
-# Profile [token required]
+## Profile [token required]
 ```
 GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile
 ```
