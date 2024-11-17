@@ -44,3 +44,6 @@ optional :
 ```
 resultLimit: [int]
 ```
+
+> [!TIP]
+> Using large amounts of resultLimit will incur additional costs
