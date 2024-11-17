@@ -24,3 +24,23 @@ address [string]
 ```
 GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile
 ```
+
+## create Sentiment
+available sentiment platform
+1. instagram
+2. instagram reels
+3. tiktok
+4. facebook
+   
+```
+POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment
+```
+body request :
+```
+link: [string]
+platformName: ['instagram' || 'tiktok', || 'facebook']
+```
+optional :
+```
+resultLimit: [int]
+```
