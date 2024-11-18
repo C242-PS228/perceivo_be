@@ -1,6 +1,6 @@
 import validator from 'validator';
 import xss from 'xss';
-import platform from '../db/platform.js';
+import platform from '../config/platformConfig.js';
 
 const registerInputValidation = (req, res, next) => {
   const { email, password, username, fullname, address } = req.body;
@@ -117,14 +117,14 @@ const sentimentValidation = (req, res, next) => {
   }
 
   if (!describePlatform.length > 0) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 'fail',
       message: 'Social Media platform undefined!',
     });
   }
 
   if (!validator.isURL(link)) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 'fail',
       message: 'url not valid!',
     });

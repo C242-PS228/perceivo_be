@@ -1,6 +1,6 @@
-/* eslint-disable no-undef */
 import sentiment from '../db/sentiment.js';
-import platform from '../db/platform.js';
+import platform from '../config/platformConfig.js';
+import inputConfig from '../config/platformParamConfig.js';
 import filteredComment from '../src/structure/sentimentFilteredComments.js';
 import { initializeApp } from 'firebase/app';
 import {
@@ -9,7 +9,6 @@ import {
   doc,
   getDoc,
   addDoc,
-  getDocs,
   deleteDoc,
 } from 'firebase/firestore';
 import firebaseConfig from '../config/firebaseConfig.js';
@@ -69,53 +68,26 @@ const showSentimentHandler = async (req, res) => {
 
 const createSentimentHandler = async (req, res) => {
   const { link, platformName, resultLimit } = req.body;
-  const describePlatform = platform.filter((item) => item.name == platformName)[0];
 
   try {
-    let input = {};
-    switch (platformName) {
-    case 'instagram':
-      { input = {
-        directUrls: [link],
-        resultsLimit: resultLimit || 1,
-      }; }
-      break;
-    case 'tiktok':
-      { input = {
-        postURLs: [link],
-        commentsPerPost: resultLimit || 1,
-      }; }
-      break;
-    case 'facebook':
-      { input = {
-        postUrls: [link],
-        maxComments: resultLimit || 1
-      }; }
-      break;
-    default:
-      res.status(404).json({
-        status: 'fail',
-        message: 'platform name undefined!'
-      });
-      break;
-    }
+    const describePlatform = platform.filter((item) => item.name == platformName)[0];
+    const input = inputConfig(platformName, link, resultLimit);
 
     // development area
     const comments = await apifyConnect(input, describePlatform.actor);
-
     console.log(comments);
 
     if (!comments) {
       res.status(404).json({
         'status': 'fail',
-        'message': 'no comments not found!'
+        'message': 'comments not found!'
       });
     }
 
     const filteredComments = filteredComment(describePlatform.name, comments);
-
     const docRef = await addDoc(collection(db, 'Comments'), { filteredComments });
 
+    // db config section
     sentiment.push({
       id: nanoid(16),
       platformName: describePlatform.name,

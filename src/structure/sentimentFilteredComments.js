@@ -18,6 +18,24 @@ const filteredComment = (actor, comments) => {
       createdAt: item.createTimeISO,
       avatar: item.avatarThumbnail,
     }));
+  case 'youtube':
+    return comments.map((item) => ({
+      uid: null,
+      username: item.author,
+      text: item.comment,
+      likes: item.voteCount,
+      createdAt: null,
+      avatar: null
+    }));
+  case 'googlemaps':
+    return comments.map((item) => ({
+      uid: null,
+      username: item.name,
+      text: item.text,
+      likes: item.stars,
+      createdAt: null,
+      avatar: null,
+    }));
   }
 };
 

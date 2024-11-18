@@ -4,12 +4,16 @@ const platform = [
     actor: 'SbK00X0JYCPblD2wp',
   },
   {
-    name: 'facebook',
-    actor: '0MWDTb4rHcMY5RIw8',
-  },
-  {
     name: 'tiktok',
     actor: 'BDec00yAmCm1QbMEI'
+  },
+  {
+    name: 'youtube',
+    actor: 'p7UMdpQnjKmmpR21D'
+  },
+  {
+    name: 'googlemaps',
+    actor: 'Xb8osYTtOjlsgI6k9'
   }
 ];
 
