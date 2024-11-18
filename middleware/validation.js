@@ -99,39 +99,48 @@ const sentimentValidation = (req, res, next) => {
   const { link, platformName } = req.body;
 
   const describePlatform = platform.filter(
-    (platform) => platform.name == platformName
+    (platform) => platform.name === platformName
   );
 
-  if (!link || link.trim() === '') {
+  if (!link || (typeof link === 'string' && link.trim() === '')) {
     return res.status(400).json({
       status: 'fail',
-      message: 'Link is required'
+      message: 'Link is required and must be a non-empty string',
     });
   }
 
   if (!platformName || platformName.trim() === '') {
     return res.status(400).json({
       status: 'fail',
-      message: 'platform name is required'
+      message: 'Platform name is required',
     });
   }
 
-  if (!describePlatform.length > 0) {
+  if (!describePlatform.length) {
     return res.status(404).json({
       status: 'fail',
       message: 'Social Media platform undefined!',
     });
   }
 
-  if (!validator.isURL(link)) {
-    return res.status(404).json({
+  if (Array.isArray(link)) {
+    const invalidLinks = link.filter((url) => !validator.isURL(url));
+    if (invalidLinks.length > 0) {
+      return res.status(400).json({
+        status: 'fail',
+        message: `Invalid URLs found: ${invalidLinks.join(', ')}`,
+      });
+    }
+  } else if (!validator.isURL(link)) {
+    return res.status(400).json({
       status: 'fail',
-      message: 'url not valid!',
+      message: 'URL is not valid!',
     });
   }
 
   next();
 };
+
 
 const validation = { registerInputValidation, sentimentValidation };
 

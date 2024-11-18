@@ -5,26 +5,26 @@ const inputConfig = (platform, link, resultLimit) => {
   switch (platform) {
   case 'instagram':
     return input = {
-      directUrls: [link],
+      directUrls: Array.isArray(link) ? link : [link],
       resultsLimit: resultLimit || 1,
     };
   case 'tiktok':
     return input = {
-      postURLs: [link],
+      postURLs: Array.isArray(link) ? link : [link],
       commentsPerPost: resultLimit || 1,
     };
   case 'youtube':
     return input = {
-      startUrls: [{
-        url: link
-      }],
+      startUrls: Array.isArray(link)
+        ? link.map((url) => ({ url }))
+        : [{ url: link }],
       maxComments: resultLimit || 1,
     };
   case 'googlemaps':
     return input = {
-      startUrls: [{
-        url: link
-      }],
+      startUrls: Array.isArray(link)
+        ? link.map((url) => ({ url }))
+        : [{ url: link }],
       maxReviews: resultLimit || 1,
       language: 'en'
     };
