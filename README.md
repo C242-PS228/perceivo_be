@@ -16,6 +16,7 @@ password: string
 
 ## Register
 when you don't have an account to get the ```JWT Token``` you need to register a new account using the Register feature, you can access register at the endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/register```.
+
 body request :
 ```
 username: string
@@ -26,54 +27,30 @@ address: string
 ```
 
 ## Profile [token required]
-kamu bisa melihat informasi akunmu menggunakan endpoint ```GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
+You can view your account information using endpoints ```GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
 
 > [!TIP]
 > use the JWT Token provided to get the correct access, without the token you cannot use this API service.
 
 ## create Sentiment
-available sentiment platform
+With this API endpoint you can see various collections of scraping comments from social media, comments that are successfully scraped will be processed by our AI system to provide response expressions from various customers and resumes of all comments obtained. Using this endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment```.
+
+Available sentiment platform
 1. instagram
 2. instagram reels
 3. tiktok
-4. facebook
-
-### Single Sentiment
-```
-POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment
-```
-body request :
-```
-link: string
-platformName: 'instagram'
-```
-optional :
-```
-resultLimit: integer
-```
-example :
-```
-curl -X POST -H "Content-Type: application/json" -d '{"link": "https://www.tiktok.com/@stacktugas.id/video/7362183020557733125", "platformName": "tiktok", "resultLimit": 15}' https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment
-```
-
-### Multiple Sentiment
-```
-POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment
-```
+4. youtube
+5. googlemaps
 
 body request :
 ```
-link: [string, string]
-platformName: 'instagram'
-```
-optional :
-```
-resultLimit: integer
-```
-example :
-```
-curl -X POST -H "Content-Type: application/json" -d '{"link": ["https://www.tiktok.com/@stacktugas.id/video/7362183020557733125", "https://www.tiktok.com/@naufalhal/video/7237490714295176449"], "platformName": "tiktok", "resultLimit": 15}' https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment
+link: string | array
+platforName: string (sentiment platform above)
 ```
 
+> [!TIP]
+> In the default request the number of comments that will be displayed is 1 comment, you can use the optional request body ```resultLimit: integer (max 500)``` to see more than one comments.
+> [!TIP]
+> Use an array to specify multiple links by adding ```link: [link 1, link 2, link 3]```.
 > [!TIP]
 > Using large amounts of resultLimit will incur additional costs
