@@ -2,11 +2,16 @@
 backtest backend : https://sentivuebe1-6dh6x3vy.b4a.run/dev
 
 ## Login
+Login gives us access to various endpoints, after doing the login process, you will get a ```JWT bearer token```, with this token you can access the role that has been determined. using this endpoint to login
 ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/login```
+
+> [!TIP]
+> use the JWT Token provided to get the correct access, without the token you cannot use this API service.
+
 body request :
 ```
-email [string]
-password [string]
+email: string
+password: string
 ```
 
 ## Register
