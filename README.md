@@ -15,20 +15,21 @@ password: string
 ```
 
 ## Register
-```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/register```
+when you don't have an account to get the ```JWT Token``` you need to register a new account using the Register feature, you can access register at the endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/register```.
 body request :
 ```
-username [string]
-email [string]
-password [alphanumeric]
-fullname [string]
-address [string]
+username: string
+email: string
+password: alphanumeric
+fullname: string
+address: string
 ```
 
 ## Profile [token required]
-```
-GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile
-```
+kamu bisa melihat informasi akunmu menggunakan endpoint ```GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
+
+> [!TIP]
+> use the JWT Token provided to get the correct access, without the token you cannot use this API service.
 
 ## create Sentiment
 available sentiment platform
