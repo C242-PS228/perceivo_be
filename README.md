@@ -42,6 +42,9 @@ Available sentiment platform
 4. youtube
 5. googlemaps
 
+> [!TIP]
+> Use an array to specify multiple links by adding ```link: [link 1, link 2, link 3]```.
+> 
 body request :
 ```
 link: string | array
@@ -50,7 +53,3 @@ platforName: string (sentiment platform above)
 
 > [!TIP]
 > In the default request the number of comments that will be displayed is 1 comment, you can use the optional request body ```resultLimit: integer (max 500)``` to see more than one comments.
-> [!TIP]
-> Use an array to specify multiple links by adding ```link: [link 1, link 2, link 3]```.
-> [!TIP]
-> Using large amounts of resultLimit will incur additional costs
