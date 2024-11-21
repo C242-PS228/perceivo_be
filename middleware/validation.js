@@ -2,6 +2,35 @@ import validator from 'validator';
 import xss from 'xss';
 import platform from '../config/platformConfig.js';
 
+const loginInputValidation = (req, res, next) => {
+  const { email, password } = req.body;
+
+  // email validation
+  if (!email || email.trim() === '') {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Email is required'
+    });
+  }
+
+  if (email && !validator.isEmail(email)) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Invalid email format'
+    });
+  }
+
+  // password validation
+  if (!password || password.trim() === '') {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Password is required'
+    });
+  }
+
+  next();
+};
+
 const registerInputValidation = (req, res, next) => {
   const { email, password, username, fullname, address } = req.body;
 
@@ -142,6 +171,6 @@ const sentimentValidation = (req, res, next) => {
 };
 
 
-const validation = { registerInputValidation, sentimentValidation };
+const validation = { registerInputValidation, loginInputValidation, sentimentValidation };
 
 export default validation;

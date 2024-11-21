@@ -6,13 +6,21 @@ import jwtAuthToken from '../middleware/jwtAuthToken.js';
 import validation from '../middleware/validation.js';
 
 route.get('/', userHandler.baseUrlHandler);
-route.post('/login', userHandler.loginHandler);
-route.post('/register', validation.registerInputValidation, userHandler.registerHandler);
+route.post('/login', validation.loginInputValidation, userHandler.loginHandler);
+route.post(
+  '/register',
+  validation.registerInputValidation,
+  userHandler.registerHandler
+);
 route.get('/profile', jwtAuthToken, userHandler.profileHandler);
 route.get('/users', jwtAuthToken, userHandler.showUsersHandler);
 
 route.get('/sentiment', sentimentHandler.showAllSentimentHandler);
-route.post('/sentiment', validation.sentimentValidation, sentimentHandler.createSentimentHandler);
+route.post(
+  '/sentiment',
+  validation.sentimentValidation,
+  sentimentHandler.createSentimentHandler
+);
 route.get('/sentiment/:id', sentimentHandler.showSentimentHandler);
 
 route.delete('/firebasetest/:id', sentimentHandler.testFirebase);
