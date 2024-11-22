@@ -14,13 +14,14 @@ route.post(
 );
 route.get('/profile', jwtAuthToken, userHandler.profileHandler);
 
-route.get('/sentiment', sentimentHandler.showAllSentimentHandler);
+route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
 route.post(
   '/sentiment',
+  jwtAuthToken,
   validation.sentimentValidation,
   sentimentHandler.createSentimentHandler
 );
-route.get('/sentiment/:id', sentimentHandler.showSentimentHandler);
+route.get('/sentiment/:id', jwtAuthToken, sentimentHandler.showSentimentHandler);
 
 route.delete('/firebasetest/:id', sentimentHandler.testFirebase);
 

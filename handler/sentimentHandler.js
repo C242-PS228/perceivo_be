@@ -2,7 +2,9 @@ import sentiment from '../db/sentiment.js';
 import platform from '../config/platformConfig.js';
 import inputConfig from '../config/platformParamConfig.js';
 import filteredComment from '../src/structure/sentimentFilteredComments.js';
+import pool from '../config/dbConfig.js';
 import { initializeApp } from 'firebase/app';
+const date = new Date();
 import {
   collection,
   getFirestore,
@@ -31,35 +33,64 @@ const testFirebase = async (req, res) => {
   });
 };
 
-const showAllSentimentHandler = (req, res) => {
+/**
+ * Handles /sentiment endpoint
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and data
+ * @description
+ * This endpoint is used to get all sentiment data for a user.
+ * the data will be filtered by the user id in the request header.
+ */
+const showAllSentimentHandler = async (req, res) => {
+  const user = req.user;
+  const query = 'SELECT * FROM tb_sentiments WHERE user_id = ?';
+  const [rows] = await pool.query(query, [user.id]);
+
   res.status(200).json({
     status: 'success',
-    data: sentiment,
+    data: rows
   });
 };
 
 const showSentimentHandler = async (req, res) => {
   const { id } = req.params;
-  try {
-    const docRef = doc(db, 'Comments', id);
-    const docSnap = await getDoc(docRef);
+  const user = req.user;
 
-    if (docSnap.exists()) {
-      res.status(200).json({
-        status: 'success',
-        data: {
-          id: docSnap.id,
-          ...docSnap.data(),
-        },
-      });
+  try {
+    const query = 'SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
+    const [rows] = await pool.query(query, [user.id, id]);
+
+    if (rows.length > 0) {
+      const docRef = doc(db, 'Comments', rows[0].comments_id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const combinedData = {
+          ...rows[0],
+          comments: docSnap.data().filteredComments || [],
+        };
+
+        res.status(200).json({
+          status: 'success',
+          data: combinedData
+        });
+      } else {
+        res.status(404).json({
+          status: 'fail',
+          message: 'data not found!'
+        });
+      }
     } else {
       res.status(404).json({
         status: 'fail',
-        message: 'data not found',
+        message: 'data not found!'
       });
     }
+
   } catch (e) {
-    return res.statu(400).json({
+    return res.status(400).json({
       status: 'fail',
       message: `error: ${e}`,
     });
@@ -68,6 +99,7 @@ const showSentimentHandler = async (req, res) => {
 
 const createSentimentHandler = async (req, res) => {
   const { link, platformName, resultLimit } = req.body;
+  const uniqueId = nanoid(16);
 
   try {
     const describePlatform = platform.filter((item) => item.name == platformName)[0];
@@ -75,7 +107,6 @@ const createSentimentHandler = async (req, res) => {
 
     // development area
     const comments = await apifyConnect(input, describePlatform.actor);
-    console.log(comments);
 
     if (!comments) {
       res.status(404).json({
@@ -88,13 +119,11 @@ const createSentimentHandler = async (req, res) => {
     const docRef = await addDoc(collection(db, 'Comments'), { filteredComments });
 
     // db config section
-    sentiment.push({
-      id: nanoid(16),
-      platformName: describePlatform.name,
-      sentimentId: docRef.id,
-      link: link,
-      comments: filteredComments,
-    });
+    const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
+    const user = req.user;
+
+    const query = 'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, created_at) value (?, ?, ?, ?, ?, ?)';
+    await pool.query(query, [uniqueId, user.id, describePlatform.name, link, docRef.id, formattedDate]);
 
     res.status(200).json({
       status: 'success',

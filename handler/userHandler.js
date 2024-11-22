@@ -1,5 +1,4 @@
 // require('dotenv').config();
-import users from '../db/users.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../config/dbConfig.js';
@@ -48,7 +47,7 @@ const loginHandler = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const query = 'SELECT email, unique_id, username, name, role_id, address, created_at, password, google_id FROM tb_users WHERE email = ?';
+    const query = 'SELECT id, email, unique_id, username, name, role_id, address, created_at, password, google_id FROM tb_users WHERE email = ?';
     const [rows] = await pool.query(query, [email]);
 
     const user = rows[0];
@@ -73,6 +72,7 @@ const loginHandler = async (req, res) => {
 
     const token = jwt.sign(
       {
+        id: user.id,
         name: user.name,
         username: user.username,
         uniqueId: user.unique_id,
@@ -92,6 +92,7 @@ const loginHandler = async (req, res) => {
       token: token,
       version: 'tags/v1.0.0',
     });
+  // eslint-disable-next-line no-unused-vars
   } catch (error) {
     res.status(401).json({
       status: 'fail',
