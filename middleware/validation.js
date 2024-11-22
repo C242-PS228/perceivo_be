@@ -1,6 +1,7 @@
 import validator from 'validator';
 import xss from 'xss';
 import platform from '../config/platformConfig.js';
+import pool from '../config/dbConfig.js';
 
 const loginInputValidation = (req, res, next) => {
   const { email, password } = req.body;
@@ -31,10 +32,21 @@ const loginInputValidation = (req, res, next) => {
   next();
 };
 
-const registerInputValidation = (req, res, next) => {
+const registerInputValidation = async (req, res, next) => {
   const { email, password, username, fullname, address } = req.body;
 
   // email validation
+  const query = 'SELECT email FROM tb_users WHERE email = ?';
+  const [rows] = await pool.query(query, [email]);
+
+  if (rows.length > 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Email is already registered',
+      version: 'tags/v1.0.0',
+    });
+  }
+
   if (!email || email.trim() === '') {
     return res.status(400).json({
       status: 'fail',
@@ -57,7 +69,9 @@ const registerInputValidation = (req, res, next) => {
     });
   }
 
-  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$/;
+  // const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$/;
+  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).+$/;
+
   if (password && !passwordRegex.test(password)) {
     return res.status(400).json({
       status: 'fail',

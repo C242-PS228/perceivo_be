@@ -3,8 +3,16 @@ import users from '../db/users.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../config/dbConfig.js';
+import { nanoid } from 'nanoid';
 const date = new Date();
 
+/**
+ * Base URL handler
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and version
+ */
 const baseUrlHandler = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -14,6 +22,13 @@ const baseUrlHandler = (req, res) => {
   });
 };
 
+/**
+ * Handles when user input incorrect URL
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and version
+ */
 const missingUrlHandler = (req, res) => {
   res.status(404).json({
     status: 'error',
@@ -22,11 +37,18 @@ const missingUrlHandler = (req, res) => {
   });
 };
 
+/**
+ * Handles user login
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, token, and version
+ */
 const loginHandler = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const query = 'SELECT email, username, password FROM tb_users WHERE email = ?';
+    const query = 'SELECT email, unique_id, username, name, role_id, address, created_at, password, google_id FROM tb_users WHERE email = ?';
     const [rows] = await pool.query(query, [email]);
 
     const user = rows[0];
@@ -52,9 +74,12 @@ const loginHandler = async (req, res) => {
     const token = jwt.sign(
       {
         name: user.name,
-        fullname: user.fullname,
+        username: user.username,
+        uniqueId: user.unique_id,
         email: user.email,
+        role: user.role_id,
         address: user.address,
+        googleId: user.google_id,
         createdAt: user.created_at,
       },
       'S3N71VU3001',
@@ -75,17 +100,22 @@ const loginHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles register endpoint
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Promise<void>}
+ */
 const registerHandler = async (req, res) => {
   const { email, password, username, fullname, address } = req.body;
+  const uniqueId = nanoid(16);
 
   try {
     const hashedPassword = await bcrypt.hashSync(password, 10);
     const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
 
-    const query = 'INSERT INTO tb_users (name, username, email, password, address, created_at) value (?, ?, ?, ?, ?, ?)';
-    const [result] = await pool.query(query, [fullname, username, email, hashedPassword, address, formattedDate]);
-
-    console.log(result);
+    const query = 'INSERT INTO tb_users (unique_id, name, username, email, password, address, created_at) value (?, ?, ?, ?, ?, ?, ?)';
+    await pool.query(query, [uniqueId, fullname, username, email, hashedPassword, address, formattedDate]);
 
     res.status(200).json({
       status: 'success',
@@ -101,6 +131,12 @@ const registerHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /profile endpoint
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and user data
+ */
 const profileHandler = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -108,15 +144,8 @@ const profileHandler = (req, res) => {
   });
 };
 
-const showUsersHandler = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    data: users,
-  });
-};
-
 const userHandler = {
-  missingUrlHandler, baseUrlHandler, loginHandler, registerHandler, showUsersHandler, profileHandler
+  missingUrlHandler, baseUrlHandler, loginHandler, registerHandler, profileHandler
 };
 
 export default userHandler;

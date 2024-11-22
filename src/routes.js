@@ -13,7 +13,6 @@ route.post(
   userHandler.registerHandler
 );
 route.get('/profile', jwtAuthToken, userHandler.profileHandler);
-route.get('/users', jwtAuthToken, userHandler.showUsersHandler);
 
 route.get('/sentiment', sentimentHandler.showAllSentimentHandler);
 route.post(
