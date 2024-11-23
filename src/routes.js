@@ -10,9 +10,12 @@ route.post('/login', validation.loginInputValidation, userHandler.loginHandler);
 route.post(
   '/register',
   validation.registerInputValidation,
+  validation.passwordValidation,
   userHandler.registerHandler
 );
 route.get('/profile', jwtAuthToken, userHandler.profileHandler);
+route.put('/profile', jwtAuthToken, userHandler.updateProfileHandler);
+route.put('/profile/changepassword', jwtAuthToken, validation.passwordValidation, userHandler.changePasswordHandler);
 
 route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
 route.post(
@@ -22,6 +25,8 @@ route.post(
   sentimentHandler.createSentimentHandler
 );
 route.get('/sentiment/:id', jwtAuthToken, sentimentHandler.showSentimentHandler);
+route.get('/sentiment/:id/comments', jwtAuthToken, sentimentHandler.showSentimentCommentsHandler);
+route.delete('/sentiment/:id', jwtAuthToken, sentimentHandler.deleteSentimentHandler);
 
 route.delete('/firebasetest/:id', sentimentHandler.testFirebase);
 

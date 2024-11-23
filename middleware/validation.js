@@ -69,16 +69,6 @@ const registerInputValidation = async (req, res, next) => {
     });
   }
 
-  // const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$/;
-  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).+$/;
-
-  if (password && !passwordRegex.test(password)) {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'Password must contain at least one letter and one number'
-    });
-  }
-
   // username validation
   if (!username || username.trim() === '') {
     return res.status(400).json({
@@ -137,7 +127,6 @@ const registerInputValidation = async (req, res, next) => {
   next();
 };
 
-
 const sentimentValidation = (req, res, next) => {
   const { link, platformName } = req.body;
 
@@ -184,7 +173,30 @@ const sentimentValidation = (req, res, next) => {
   next();
 };
 
+const passwordValidation = (req, res, next) => {
+  const { password, newPassword } = req.body;
 
-const validation = { registerInputValidation, loginInputValidation, sentimentValidation };
+  // const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$/;
+  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).+$/;
+
+  if (password && !passwordRegex.test(password)) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Password must contain at least one letter and one number'
+    });
+  }
+
+  if (newPassword && !passwordRegex.test(newPassword)) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Password must contain at least one letter and one number'
+    });
+  }
+
+  next();
+};
+
+
+const validation = { registerInputValidation, loginInputValidation, sentimentValidation, passwordValidation };
 
 export default validation;
