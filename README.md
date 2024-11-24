@@ -51,7 +51,7 @@ oldPassword: string,
 newPassword: string
 ```
 
-## create Sentiment
+## Create Sentiment
 With this API endpoint you can see various collections of scraping comments from social media, comments that are successfully scraped will be processed by our AI system to provide response expressions from various customers and resumes of all comments obtained. Using this endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment```.
 
 Available sentiment platform
