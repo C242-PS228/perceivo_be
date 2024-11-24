@@ -1,9 +1,6 @@
 # Perceivo BE v1.0.0 Beta
 backtest backend : https://sentivuebe1-6dh6x3vy.b4a.run/dev
 
-<p></p>
-<p></p>
-
 ## Login
 Login gives us access to various endpoints, after doing the login process, you will get a ```JWT bearer token```, with this token you can access the role that has been determined. using this endpoint to login
 ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/login```
@@ -17,9 +14,6 @@ email: string
 password: string
 ```
 
-<p></p>
-<p></p>
-
 ## Register
 when you don't have an account to get the ```JWT Token``` you need to register a new account using the Register feature, you can access register at the endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/register```.
 
@@ -32,17 +26,30 @@ fullname: string
 address: string
 ```
 
-<p></p>
-<p></p>
-
-## Profile [token required]
-You can view your account information using endpoints ```GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
-
 > [!TIP]
 > use the JWT Token provided to get the correct access, without the token you cannot use this API service.
 
-<p></p>
-<p></p>
+## Profile 
+You can view your account information using endpoints ```GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
+
+## update Profile Detail
+You can update your profile account information using this endpoint ```PUT https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
+
+body request
+```
+fullname: string,
+username: string,
+address: string
+```
+
+## Change User Password
+If You want to change your password information, you can using this endpoint ```PUT https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile/changepassword```.
+
+body request
+```
+oldPassword: string,
+newPassword: string
+```
 
 ## create Sentiment
 With this API endpoint you can see various collections of scraping comments from social media, comments that are successfully scraped will be processed by our AI system to provide response expressions from various customers and resumes of all comments obtained. Using this endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment```.
