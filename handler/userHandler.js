@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import pool from '../config/dbConfig.js';
 import { nanoid } from 'nanoid';
 const date = new Date();
+import dotenv from 'dotenv';
+dotenv.config();
 
 /**
  * Base URL handler
@@ -190,7 +192,7 @@ const profileHandler = async (req, res) => {
  * The response will contain the updated user data.
  */
 const updateProfileHandler = async (req, res) => {
-  const { name, username, address } = req.body;
+  const { fullname, username, address } = req.body;
   const user = req.user;
 
   try {
@@ -205,7 +207,7 @@ const updateProfileHandler = async (req, res) => {
       });
     }
 
-    const updatedName = name ?? currentData[0].name;
+    const updatedName = fullname ?? currentData[0].fullname;
     const updatedUsername = username ?? currentData[0].username;
     const updatedAddress = address ?? currentData[0].address;
 

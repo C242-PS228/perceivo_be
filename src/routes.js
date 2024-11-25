@@ -13,6 +13,7 @@ route.post(
   validation.passwordValidation,
   userHandler.registerHandler
 );
+
 route.get('/profile', jwtAuthToken, userHandler.profileHandler);
 route.put('/profile', jwtAuthToken, userHandler.updateProfileHandler);
 route.put('/profile/changepassword', jwtAuthToken, validation.passwordValidation, userHandler.changePasswordHandler);
