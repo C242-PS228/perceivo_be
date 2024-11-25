@@ -1,4 +1,3 @@
-// require('dotenv').config();
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../config/dbConfig.js';
@@ -85,8 +84,8 @@ const loginHandler = async (req, res) => {
         googleId: user.google_id,
         createdAt: user.created_at,
       },
-      'S3N71VU3001',
-      { expiresIn: '1d' }
+      process.env.JWT_TOKEN,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
     res.json({

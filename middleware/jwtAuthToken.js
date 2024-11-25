@@ -1,5 +1,6 @@
-// require('dotenv').config();
+import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+dotenv.config();
 
 const jwtAuthToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -10,7 +11,7 @@ const jwtAuthToken = (req, res, next) => {
     message: 'Unauthorized'
   });
 
-  jwt.verify(token, 'S3N71VU3001', (err, user) => {
+  jwt.verify(token, process.env.JWT_TOKEN, (err, user) => {
     if (err) {
       return res.status(403).json({
         status: 'fail',

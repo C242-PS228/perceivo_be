@@ -1,6 +1,8 @@
 import { ApifyClient } from 'apify-client';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const apiKey = 'apify_api_l2kcKwd666TfUk50H5r16tCoIGuTZd0iuWax';
+const apiKey = process.env.APIFY_API_KEY;
 const client = new ApifyClient({
   token: apiKey,
 });
