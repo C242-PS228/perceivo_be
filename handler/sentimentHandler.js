@@ -19,6 +19,8 @@ import { nanoid } from 'nanoid';
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
+import tagsTrigger from './event/addTagsTrigger.js';
+
 const testFirebase = async (req, res) => {
   const { id } = req.params;
 
@@ -177,7 +179,7 @@ const showSentimentCommentsHandler = async (req, res) => {
  * The response will contain the sentiment id and the filtered comments.
  */
 const createSentimentHandler = async (req, res) => {
-  const { link, platformName, resultLimit } = req.body;
+  const { link, platformName, resultLimit, tags } = req.body;
   const uniqueId = nanoid(16);
 
   try {
@@ -204,7 +206,11 @@ const createSentimentHandler = async (req, res) => {
     const user = req.user;
 
     const query = 'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, created_at) value (?, ?, ?, ?, ?, ?)';
-    await pool.query(query, [uniqueId, user.id, describePlatform.name, formattedLinks, docRef.id, formattedDate]);
+    const [rows] = await pool.query(query, [uniqueId, user.id, describePlatform.name, formattedLinks, docRef.id, formattedDate]);
+
+    if (Array.isArray(tags) && tags.length > 0) {
+      await tagsTrigger(tags, user, rows.insertId);
+    }
 
     res.status(200).json({
       status: 'success',
