@@ -1,93 +1,90 @@
 # Perceivo BE v1.0.0 Beta
-backtest backend : https://sentivuebe1-6dh6x3vy.b4a.run/dev
 
-## Login
-Login gives us access to various endpoints, after doing the login process, you will get a ```JWT bearer token```, with this token you can access the role that has been determined. using this endpoint to login
-```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/login```
+Welcome to **Perceivo Backend** (Perceivo BE) version **1.0.0 Beta**. This is the backend API for managing sentiment analysis and user authentication for the Perceivo application.
 
-> [!TIP]
-> use the JWT Token provided to get the correct access, without the token you cannot use this API service.
+---
 
-body request :
-```
-email: string
-password: string
-```
+## Backtest Backend
 
-## Register
-when you don't have an account to get the ```JWT Token``` you need to register a new account using the Register feature, you can access register at the endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/register```.
+For testing and backtesting, you can access the backend at the following URL:
 
-body request :
-```
-username: string
-email: string
-password: alphanumeric
-fullname: string
-address: string
-```
+[Backtest Backend](https://sentivuebe1-6dh6x3vy.b4a.run/dev)
 
-> [!TIP]
-> use the JWT Token provided to get the correct access, without the token you cannot use this API service.
+---
 
-## Show User Profile 
-You can view your account information using endpoints ```GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
+## API Structure
 
-## Update User Profile Detail
-You can update your profile account information using this endpoint ```PUT https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile```.
+The API is organized into the following sections:
 
-body request
-```
-fullname: string,
-username: string,
-address: string
-```
+### 1. **Authentication (`auth`)**
 
-## Change User Password
-If You want to change your password information, you can using this endpoint ```PUT https://sentivuebe1-6dh6x3vy.b4a.run/dev/profile/changepassword```.
+- **Purpose**: Handles user authentication, including login functionality.
+- **Docs**: Navigate to the `auth` folder for detailed API documentation on authentication endpoints.
 
-body request
-```
-oldPassword: string,
-newPassword: string
-```
+### 2. **User Profile (`profile`)**
 
-## Create Sentiment
-With this API endpoint you can see various collections of scraping comments from social media, comments that are successfully scraped will be processed by our AI system to provide response expressions from various customers and resumes of all comments obtained. Using this endpoint ```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment```.
+- **Purpose**: Manages user profile-related functionality.
+- **Docs**: Navigate to the `profile` folder for documentation on endpoints related to user profiles.
 
-Available sentiment platform
-1. instagram
-2. tiktok
-3. youtube
-4. googlemaps
+### 3. **Sentiment Analysis (`sentiment`)**
 
-> [!TIP]
-> Use an array to specify multiple links by adding ```link: [link 1, link 2, link 3]```.
-> 
-body request :
-```
-link: string | array
-platforName: string (sentiment platform above)
-```
+- **Purpose**: Provides sentiment analysis for social media posts and comments. Includes endpoints for fetching, creating, deleting, and filtering sentiment data.
+- **Docs**: Navigate to the `sentiment` folder for documentation on sentiment-related endpoints.
 
-> [!TIP]
-> In the default request the number of comments that will be displayed is 1 comment, you can use the optional request body ```resultLimit: integer (max 500)``` to see more than one comments.
+---
 
-### Example
-```
-// single link
-curl -X POST -H "Content-Type: application/json" -d '{"link": "https://link1", "platformName": "tiktok", "resultLimit": 15}' https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment
+## API Contract Folders
 
-// multiple link
-curl -X POST -H "Content-Type: application/json" -d '{"link": ["https://link1", "https://link2"], "platformName": "tiktok", "resultLimit": 15}' https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment 
-```
+Here are the API contracts for each section:
 
-## Show All Sentiment
-To get all the sentiment data that was created, use this endpoint ```GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment```.
+- **[Auth API](./APIContract/Auth/README.md)** : Handles user authentication and login.
+- **[Profile API](./APIContract/Profile/README.md)** : Manages user profile data.
+- **[Sentiment API](./APIContract/Sentiment/README.md)** : Analyzes sentiment from comments or other data.
 
-## Show Sentiment Detail
-To get sentiment details, you need to determine the ```unique_id``` of the sentiment, this id can be found in the response data of all sentiments, use this endpoint
-```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment/{unique_id}```.
+---
 
-## Show Sentiment Detail Comments
-When you want to get only all the comments that were successfully stored in sentiment, you can use this endpoint.
-```POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment/{unique_id}/comments```
+## 1. **Base URL Handler**
+
+- **URL**: `/`
+- **Method**: `GET`
+- **Description**:  
+  This is the default endpoint that provides a status message and version information. It serves as a health check to verify if the API is running and ready for use.
+
+- **Response**:
+
+  - **Content-Type**: `application/json`
+  - **Body Example**:
+    ```json
+    {
+      "status": "success",
+      "message": "Sentivue backend APIs endpoint, please /login or /register first to use the APIs",
+      "version": "tags/v1.0.0"
+    }
+    ```
+
+- **Response Codes**:
+  - `200 OK`: API is up and running, and ready to accept requests.
+
+---
+
+## 2. **Missing URL Handler**
+
+- **URL**: `/*other routes*`
+- **Method**: `GET`
+- **Description**:  
+  This handler returns an error response when the requested route is not found. It informs the client that the specified endpoint does not exist in the API.
+
+- **Response**:
+
+  - **Content-Type**: `application/json`
+  - **Body Example**:
+    ```json
+    {
+      "status": "error",
+      "message": "Route not found",
+      "version": "tags/v1.0.0"
+    }
+    ```
+
+- **Response Codes**:
+  - `404 Not Found`: The requested route does not exist or is invalid.
