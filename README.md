@@ -12,7 +12,7 @@ POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags
 body request 
 ```json
 {
-  tag_name: string 
+  "tag_name": "string" 
 }
 ```
 
@@ -35,7 +35,7 @@ PUT https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags/:tag_id
 Body request
 ```json
 {
-  tag_name: string
+  "tag_name": "string"
 }
 ```
 
@@ -54,14 +54,14 @@ POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/sentiment
 body request :
 ```json
 {
-  link: string | [string, string],
-  platformName: string,
-  resultLimit: 15,
-  tags: ["Technology"] // Pastikan menggunakan Array
+  "link": "string | [string, string]",
+  "platformName": "string",
+  "resultLimit": 15,
+  "tags": ["Technology"] // Pastikan menggunakan Array
 }
 ```
 
 Kamu bisa menambahkan beberapa tags sekaligus pada body request dengan menggunakan tipe data array/list!
 ```json
-tags: ["Technology", "Science", "Software"]
+"tags": ["Technology", "Science", "Software"]
 ```
