@@ -127,6 +127,36 @@ const registerInputValidation = async (req, res, next) => {
   next();
 };
 
+const tagNameValidation = (req, res, next) => {
+  const data = req.body;
+
+  const alphanumericRegex = /^[a-zA-Z0-9\s]+$/;
+  if (!alphanumericRegex.test(data.tag_name)) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Tag name must contain only letters, numbers, and spaces'
+    });
+  }
+
+  if (!data.tag_name || data.tag_name.trim() === '') {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Tag name is required'
+    });
+  }
+
+  // anti-XSS
+  if (req.body) {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = xss(req.body[key]);
+      }
+    }
+  }
+
+  next();
+};
+
 const sentimentValidation = (req, res, next) => {
   const { link, platformName } = req.body;
 
@@ -197,6 +227,6 @@ const passwordValidation = (req, res, next) => {
 };
 
 
-const validation = { registerInputValidation, loginInputValidation, sentimentValidation, passwordValidation };
+const validation = { registerInputValidation, loginInputValidation, sentimentValidation, passwordValidation, tagNameValidation };
 
 export default validation;
