@@ -26,13 +26,31 @@ const showTagHandler = async (req, res) => {
 
   try {
     // add additional partial relational data (tb_sentiment - tb_sentiment_tags - tb_tags)
-    const query = 'SELECT * FROM tb_tags WHERE unique_id = ? AND user_id = ?';
+    const query = `SELECT 
+        t.id AS tag_id,
+        t.tag_name,
+        t.created_at AS tag_created_at,
+        s.id AS sentiment_id,
+        s.unique_id AS sentiment_unique_id,
+        s.platform,
+        s.sentiment_link,
+        s.created_at AS sentiment_created_at
+      FROM 
+        tb_tags t
+      INNER JOIN 
+        tb_sentiment_tags st ON t.id = st.tag_id
+      INNER JOIN 
+        tb_sentiments s ON st.sentiment_id = s.id
+      WHERE 
+        t.unique_id = ? AND t.user_id = ?;
+    `;
+
     const [rows] = await pool.query(query, [uniqueId, req.user.id]);
 
     if (rows.length > 0) {
       res.status(200).json({
         status: 'success',
-        data: rows
+        data: rows,
       });
     } else {
       res.status(404).json({
