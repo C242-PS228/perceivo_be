@@ -1,2 +1,6 @@
 node_modules/
 .env
+config/
+src/server.js
+middleware/validation.js
+handler/userHandler.js
