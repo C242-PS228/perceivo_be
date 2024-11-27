@@ -2,6 +2,17 @@ import pool from "../config/dbConfig.js";
 import { nanoid } from "nanoid";
 const date = new Date();
 
+/**
+ * Handles /tags endpoint
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and tags data
+ * @description
+ * This endpoint is used to get all tags data for a user.
+ * The data will be filtered by the user id in the request header.
+ * The response will contain the tags data.
+ */
 const showAllTagsHandler = async (req, res) => {
   const user = req.user;
 
@@ -21,6 +32,17 @@ const showAllTagsHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /tags/:unique_id endpoint for getting a tag and its related sentiment
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and tag data
+ * @description
+ * This endpoint is used to get a tag and its related sentiment data.
+ * The tag id is provided in the request params.
+ * The response will contain the tag data and its related sentiment data.
+ */
 const showTagHandler = async (req, res) => {
   const uniqueId = req.params.unique_id;
 
@@ -66,6 +88,17 @@ const showTagHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /tags endpoint for creating a new tag
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and user data
+ * @description
+ * This endpoint is used to create a new tag for a user.
+ * The tag name is provided in the request body.
+ * The response will contain the message of success or failure of creating the tag.
+ */
 const createTagHandler = async (req, res) => {
   const data = req.body;
   const uniqueId = nanoid(16);
@@ -101,6 +134,17 @@ const createTagHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /tags/:unique_id endpoint for updating a tag
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status and message
+ * @description
+ * This endpoint updates the tag name based on the unique tag ID and user ID.
+ * The tag name is provided in the request body, and the tag ID is provided
+ * in the request parameters. The response indicates success or failure of the update.
+ */
 const updateTagHandler = async (req, res) => {
   const uniqueId = req.params.unique_id;
   const data = req.body;
@@ -133,6 +177,17 @@ const updateTagHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /tags/:unique_id endpoint for delete tag
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and user data
+ * @description
+ * This endpoint is used to delete a tag.
+ * The tag id is provided in the request header.
+ * The response will contain the deleted tag data.
+ */
 const deleteTagHandler = async (req, res) => {
   const uniqueId = req.params.unique_id;
 

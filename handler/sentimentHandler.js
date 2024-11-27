@@ -56,56 +56,83 @@ const showAllSentimentHandler = async (req, res) => {
 };
 
 /**
- * Handles /sentiment/:id endpoint
+ * Handles /sentiment/:id endpoint for retrieving sentiment details
  * @function
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with status, message, and data
+ * @returns {Object} JSON response with status, message, and sentiment data
  * @description
- * This endpoint is used to get a sentiment data for a user by its id.
- * The id is provided in the request parameter.
- * The data will be filtered by the user id in the request header.
+ * This endpoint retrieves detailed sentiment data for a specific sentiment ID.
+ * It includes the sentiment's platform, link, creation date, associated tags,
+ * and comments if available. The sentiment ID is provided in the request
+ * parameters, and the data is filtered by the user ID in the request header.
  */
 const showSentimentHandler = async (req, res) => {
-  // sentiment ID
-  const { id } = req.params;
+  const { id } = req.params; // sentiment ID
   const user = req.user;
 
   try {
-    const query =
-      "SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?";
+    const query = `
+      SELECT 
+        s.id AS sentiment_id,
+        s.unique_id AS sentiment_unique_id,
+        t.tag_name,
+        s.platform,
+        s.sentiment_link,
+        s.created_at AS sentiment_created_at,
+        s.comments_id
+      FROM 
+        tb_sentiments s
+      LEFT JOIN 
+        tb_sentiment_tags st ON s.id = st.sentiment_id
+      LEFT JOIN 
+        tb_tags t ON st.tag_id = t.id
+      WHERE 
+        s.user_id = ? AND s.unique_id = ?;
+    `;
+
     const [rows] = await pool.query(query, [user.id, id]);
 
     if (rows.length > 0) {
-      const docRef = doc(db, "Comments", rows[0].comments_id);
-      const docSnap = await getDoc(docRef);
+      const tags = rows
+        .filter((row) => row.tag_name !== null) // Hanya ambil tag_name yang ada
+        .map((row) => row.tag_name);
 
-      if (docSnap.exists()) {
-        const combinedData = {
-          ...rows[0],
-          comments: docSnap.data().filteredComments || [],
-        };
+      const sentimentData = {
+        sentiment_id: rows[0].sentiment_id,
+        sentiment_unique_id: rows[0].sentiment_unique_id,
+        platform: rows[0].platform,
+        sentiment_link: rows[0].sentiment_link,
+        sentiment_created_at: rows[0].sentiment_created_at,
+        comments_id: rows[0].comments_id,
+        tags,
+      };
 
-        res.status(200).json({
-          status: "success",
-          data: combinedData,
-        });
-      } else {
-        res.status(404).json({
-          status: "fail",
-          message: "data not found!",
-        });
+      if (sentimentData.comments_id) {
+        const docRef = doc(db, "Comments", sentimentData.comments_id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          sentimentData.comments = docSnap.data().filteredComments || [];
+        } else {
+          sentimentData.comments = [];
+        }
       }
+
+      res.status(200).json({
+        status: "success",
+        data: sentimentData,
+      });
     } else {
       res.status(404).json({
         status: "fail",
-        message: "data not found!",
+        message: "Sentiment data not found!",
       });
     }
   } catch (e) {
     return res.status(400).json({
       status: "fail",
-      message: `error: ${e}`,
+      message: `Error: ${e.message}`,
     });
   }
 };
@@ -227,6 +254,7 @@ const createSentimentHandler = async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "success add analyst",
+      tags: tags,
       sentimentId: docRef.id,
       links: formattedLinks,
       platform: describePlatform.name,
