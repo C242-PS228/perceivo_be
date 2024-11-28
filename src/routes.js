@@ -9,7 +9,7 @@ import validation from "../middleware/validation.js";
 
 route.get("/", userHandler.baseUrlHandler);
 
-route.get("/dashboard", jwtAuthToken, dashboardHandler.dashboardHandler);
+route.get("/dashboard", jwtAuthToken, dashboardHandler);
 
 // Login Register Route
 route.post("/login", validation.loginInputValidation, userHandler.loginHandler);
