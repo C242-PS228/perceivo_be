@@ -2,6 +2,7 @@ import platform from "../config/platformConfig.js";
 import inputConfig from "../config/platformParamConfig.js";
 import filteredComment from "../src/structure/sentimentFilteredComments.js";
 import pool from "../config/dbConfig.js";
+import axios from "axios";
 import { initializeApp } from "firebase/app";
 const date = new Date();
 import {
@@ -269,6 +270,43 @@ const createSentimentHandler = async (req, res) => {
   }
 };
 
+const sentimentPredictHandler = async (req, res) => {
+  const id = req.params.id;
+  // env variable
+  const endpoint = "http://127.0.0.1:8000/predict";
+  const user = req.user;
+
+  try {
+    const query =
+      "SELECT comments_id FROM tb_sentiments WHERE user_id = ? AND unique_id = ?";
+    const [rows] = await pool.query(query, [user.id, id]);
+
+    if (rows.length > 0) {
+      const comments_id = rows[0].comments_id;
+      const docRef = doc(db, "Comments", comments_id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const response = await axios.post(endpoint, {
+          comments: docSnap.data().filteredComments || [],
+        });
+
+        res.status(200).json({
+          status: "success",
+          data: response.data,
+          version: "tags/v1.0.0",
+        });
+      }
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: "fail",
+      message: `error: ${error}`,
+      version: "tags/v1.0.0",
+    });
+  }
+};
+
 const deleteSentimentHandler = async (req, res) => {
   // sentiment ID
   const { id } = req.params;
@@ -314,6 +352,7 @@ const sentimentHandler = {
   createSentimentHandler,
   showSentimentCommentsHandler,
   deleteSentimentHandler,
+  sentimentPredictHandler,
 };
 
 export default sentimentHandler;
