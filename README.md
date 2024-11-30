@@ -31,6 +31,11 @@ The API is organized into the following sections:
 - **Purpose**: Provides sentiment analysis for social media posts and comments. Includes endpoints for fetching, creating, deleting, and filtering sentiment data.
 - **Docs**: Navigate to the `sentiment` folder for documentation on sentiment-related endpoints.
 
+### 4. **Tags Management (`tags`)**
+
+- **Purpose**: Handles tag management for categorizing and organizing data. Includes endpoints for creating, retrieving, updating, and deleting tags.
+- **Docs**: Navigate to the `tags` folder for detailed API documentation on tag-related endpoints.
+
 ---
 
 ## API Contract Folders
@@ -40,6 +45,7 @@ Here are the API contracts for each section:
 - **[Auth API](./APIContract/Auth/README.md)** : Handles user authentication and login.
 - **[Profile API](./APIContract/Profile/README.md)** : Manages user profile data.
 - **[Sentiment API](./APIContract/Sentiment/README.md)** : Analyzes sentiment from comments or other data.
+- **[Tags API](./APIContract/Tags/README.md)** : Manages tags for organizing and categorizing data.
 
 ---
 
