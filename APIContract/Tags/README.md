@@ -27,19 +27,19 @@ The **Tags API** is responsible for managing tags in the Perceivo BE application
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "status": "success",
-  "data": [
+    ```json
     {
-      "id": 1,
-      "unique_id": "unique_tag_id",
-      "tag_name": "example_tag",
-      "created_at": "2024-12-01 10:00:00"
+      "status": "success",
+      "data": [
+        {
+          "id": 1,
+          "unique_id": "unique_tag_id",
+          "tag_name": "example_tag",
+          "created_at": "2024-12-01 10:00:00"
+        }
+      ]
     }
-  ]
-}
-```
+    ```
 
 - **Endpoint URL**:  
   `GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags`
@@ -60,23 +60,23 @@ The **Tags API** is responsible for managing tags in the Perceivo BE application
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "status": "success",
-  "data": [
+    ```json
     {
-      "tag_id": 1,
-      "tag_name": "example_tag",
-      "tag_created_at": "2024-12-01 10:00:00",
-      "sentiment_id": 10,
-      "sentiment_unique_id": "unique_sentiment_id",
-      "platform": "Twitter",
-      "sentiment_link": "https://example.com/sentiment",
-      "sentiment_created_at": "2024-12-01 09:00:00"
+      "status": "success",
+      "data": [
+        {
+          "tag_id": 1,
+          "tag_name": "example_tag",
+          "tag_created_at": "2024-12-01 10:00:00",
+          "sentiment_id": 10,
+          "sentiment_unique_id": "unique_sentiment_id",
+          "platform": "Twitter",
+          "sentiment_link": "https://example.com/sentiment",
+          "sentiment_created_at": "2024-12-01 09:00:00"
+        }
+      ]
     }
-  ]
-}
-```
+    ```
 
 - **Endpoint URL**:  
   `GET https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags/:unique_id`
@@ -97,23 +97,23 @@ The **Tags API** is responsible for managing tags in the Perceivo BE application
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "tag_name": "new_tag"
-}
-```
+    ```json
+    {
+      "tag_name": "new_tag"
+    }
+    ```
 
 - **Response**:
 
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "status": "success",
-  "message": "success add tag new_tag"
-}
-```
+    ```json
+    {
+      "status": "success",
+      "message": "success add tag new_tag"
+    }
+    ```
 
 - **Endpoint URL**:  
   `POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags`
@@ -134,23 +134,23 @@ The **Tags API** is responsible for managing tags in the Perceivo BE application
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "tag_name": "updated_tag"
-}
-```
+    ```json
+    {
+      "tag_name": "updated_tag"
+    }
+    ```
 
 - **Response**:
 
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "status": "success",
-  "message": "success update tag updated_tag"
-}
-```
+    ```json
+    {
+      "status": "success",
+      "message": "success update tag updated_tag"
+    }
+    ```
 
 - **Endpoint URL**:  
   `PATCH https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags/:unique_id`
@@ -171,12 +171,12 @@ The **Tags API** is responsible for managing tags in the Perceivo BE application
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "status": "success",
-  "message": "success delete tag"
-}
-```
+    ```json
+    {
+      "status": "success",
+      "message": "success delete tag"
+    }
+    ```
 
 - **Endpoint URL**:  
   `DELETE https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags/:unique_id`
@@ -197,28 +197,28 @@ The **Tags API** is responsible for managing tags in the Perceivo BE application
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "tags": ["tag1", "tag2"]
-}
-```
+    ```json
+    {
+      "tags": ["tag1", "tag2"]
+    }
+    ```
 
 - **Response**:
 
   - **Content-Type**: `application/json`
   - **Body Example**:
 
-```json
-{
-  "status": "success",
-  "data": [
+    ```json
     {
-      "id": 1,
-      "tag_name": "tag1"
+      "status": "success",
+      "data": [
+        {
+          "id": 1,
+          "tag_name": "tag1"
+        }
+      ]
     }
-  ]
-}
-```
+    ```
 
 - **Endpoint URL**:  
   `POST https://sentivuebe1-6dh6x3vy.b4a.run/dev/tags/check`
