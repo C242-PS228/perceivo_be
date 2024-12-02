@@ -5,7 +5,12 @@ import daStyle from 'eslint-config-dicodingacademy';
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   daStyle,
-  { files: ['./src/*.js', './middleware/*.js', './handler/*.js'], languageOptions: { sourceType: 'commonjs' } },
+  { files: ['./src/*.js', './middleware/*.js', './handler/*.js'], languageOptions: { sourceType: 'commonjs', globals: { ...globals.node }, } },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
+  {
+    rules: {
+      'no-undef': 'off',
+    },
+  },
 ];

@@ -1,11 +1,16 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+const env = process.env;
+
 const firebaseConfig = {
-  apiKey: 'AIzaSyAHOuUmx0i1bW62yAePUq7pR8RpWI6AWBM',
-  authDomain: 'sentivue-be.firebaseapp.com',
-  projectId: 'sentivue-be',
-  storageBucket: 'sentivue-be.firebasestorage.app',
-  messagingSenderId: '271529879590',
-  appId: '1:271529879590:web:86ba53c3e87754cf6b5ee7',
-  measurementId: 'G-J1BGE468PZ'
+  apiKey: env.FIREBASE_API_KEY,
+  authDomain: env.FIREBASE_AUTH_DOMAIN,
+  projectId: env.FIREBASE_PROJECT_ID,
+  storageBucket: env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.FIREBASE_APP_ID,
+  measurementId: env.FIREBASE_MEASUREMENT_ID
 };
 
 export default firebaseConfig;

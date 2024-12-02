@@ -1,12 +1,14 @@
 import express from 'express';
 import route from './routes.js';
 import bodyParser from 'body-parser';
-// require('dotenv').config();
+import appVersion from '../config/appVersion.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 
-app.listen(3000,  '0.0.0.0', () => {
-  console.log('Server running at http://0.0.0.0:3000');
+app.listen(process.env.APP_PORT,  '0.0.0.0', () => {
+  console.log(`Server running at http://0.0.0.0:${process.env.APP_PORT}`);
 });
 
 app.use((req, res, next) => {
@@ -16,7 +18,12 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(appVersion);
+
 app.use(bodyParser.json());
 
+// production route
+app.use(`/${process.env.APP_VERSION}`, route);
+
 // development route
-app.use('/dev', route);
+// app.use('/dev', route);
