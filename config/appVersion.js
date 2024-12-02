@@ -7,7 +7,7 @@ const addVersion = (req, res, next) => {
 
   res.json = function (body) {
     const response = {
-      version: process.env.APP_VERSION,
+      version: process.env.APP_VERSION || 'v1.0.x',
       ...body,
     };
 

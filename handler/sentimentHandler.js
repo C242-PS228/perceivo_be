@@ -21,10 +21,6 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
 import tagsTrigger from './event/addTagsTrigger.js';
-<<<<<<< HEAD
-import { version } from 'validator';
-=======
->>>>>>> production
 
 const testFirebase = async (req, res) => {
   const { id } = req.params;
@@ -241,7 +237,6 @@ const createSentimentHandler = async (req, res) => {
     const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
     const user = req.user;
 
-<<<<<<< HEAD
     const query =
       'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, created_at) value (?, ?, ?, ?, ?, ?)';
     const [rows] = await pool.query(query, [
@@ -252,10 +247,6 @@ const createSentimentHandler = async (req, res) => {
       docRef.id,
       formattedDate,
     ]);
-=======
-    const query = 'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, created_at) value (?, ?, ?, ?, ?, ?)';
-    const [rows] = await pool.query(query, [uniqueId, user.id, describePlatform.name, formattedLinks, docRef.id, formattedDate]);
->>>>>>> production
 
     if (Array.isArray(tags) && tags.length > 0) {
       await tagsTrigger(tags, user, rows.insertId);
