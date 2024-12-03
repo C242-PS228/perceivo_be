@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import platform from '../config/platformConfig.js';
 import inputConfig from '../config/platformParamConfig.js';
 import filteredComment from '../src/structure/sentimentFilteredComments.js';
@@ -248,6 +249,7 @@ const createSentimentHandler = async (req, res) => {
       formattedDate,
     ]);
 
+    // Trigger add tags
     if (Array.isArray(tags) && tags.length > 0) {
       await tagsTrigger(tags, user, rows.insertId);
     }
@@ -256,7 +258,8 @@ const createSentimentHandler = async (req, res) => {
       status: 'success',
       message: 'success add analyst',
       tags: tags,
-      sentimentId: docRef.id,
+      sentimentId: uniqueId,
+      commentsId: docRef.id,
       links: formattedLinks,
       platform: describePlatform.name,
       comments: filteredComments,

@@ -15,7 +15,7 @@ const jwtAuthToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({
         status: 'fail',
-        message: 'Invalid token'
+        message: 'Invalid Auth Token, Unauthorized'
       });
     };
 
