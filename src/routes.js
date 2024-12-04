@@ -51,15 +51,15 @@ route.get(
   jwtAuthToken,
   sentimentHandler.showSentimentCommentsHandler
 );
+route.get(
+  '/sentiment/:id/statistic',
+  jwtAuthToken,
+  sentimentHandler.showSentimentStatisticHandler
+);
 route.delete(
   '/sentiment/:id',
   jwtAuthToken,
   sentimentHandler.deleteSentimentHandler
-);
-route.post(
-  '/sentiment/:id/predict',
-  jwtAuthToken,
-  sentimentHandler.sentimentPredictHandler
 );
 
 // Tags Section Route

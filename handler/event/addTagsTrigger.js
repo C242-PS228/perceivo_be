@@ -1,5 +1,5 @@
 import pool from '../../config/dbConfig.js';
-import { nanoid } from 'nanoid'; // Mengimpor nanoid
+import { nanoid } from 'nanoid';
 
 const tagsTrigger = async (tags, user, insertId) => {
   try {
@@ -13,19 +13,39 @@ const tagsTrigger = async (tags, user, insertId) => {
     const newTags = tagsArray.filter((tag) => !existingTags.includes(tag));
 
     if (newTags.length > 0) {
-      const uniqueId = nanoid(16);
-      const insertTagsQuery = 'INSERT INTO tb_tags (user_id, tag_name, unique_id) VALUES ?';
-      const tagValues = newTags.map((tag) => [user.id, tag, uniqueId]);
+      const tagValues = [];
+
+      for (const tag of newTags) {
+        let uniqueId = nanoid(16);
+        let isDuplicate = true;
+
+        while (isDuplicate) {
+          const [checkRows] = await pool.query(
+            'SELECT COUNT(*) as count FROM tb_tags WHERE unique_id = ?',
+            [uniqueId]
+          );
+          if (checkRows[0].count === 0) {
+            isDuplicate = false;
+          } else {
+            uniqueId = nanoid(16);
+          }
+        }
+
+        tagValues.push([user.id, tag, uniqueId]);
+      }
+
+      const insertTagsQuery =
+        'INSERT INTO tb_tags (user_id, tag_name, unique_id) VALUES ?';
       await pool.query(insertTagsQuery, [tagValues]);
 
       const [newRows] = await pool.query(checkQuery, [user.id, tagsArray]);
       getrows.push(...newRows);
     }
 
-    const tagValues = getrows.map((tag) => [insertId, tag.id]);
+    const tagValuesToLink = getrows.map((tag) => [insertId, tag.id]);
     const insertQuery =
       'INSERT INTO tb_sentiment_tags (sentiment_id, tag_id) VALUES ?';
-    await pool.query(insertQuery, [tagValues]);
+    await pool.query(insertQuery, [tagValuesToLink]);
 
   } catch (error) {
     console.error(error);
