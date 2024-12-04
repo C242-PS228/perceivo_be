@@ -127,8 +127,21 @@ const registerInputValidation = async (req, res, next) => {
   next();
 };
 
-const tagNameValidation = (req, res, next) => {
+const tagNameValidation = async (req, res, next) => {
   const data = req.body;
+  const user = req.user;
+
+  const query = 'SELECT tag_name FROM tb_tags WHERE tag_name = ? AND user_id = ?';
+  const [rows] = await pool.query(query, [data.tag_name, user.id]);
+
+  console.log(rows);
+
+  if (rows.length > 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Tag name already exists'
+    });
+  }
 
   const alphanumericRegex = /^[a-zA-Z0-9\s]+$/;
   if (!alphanumericRegex.test(data.tag_name)) {

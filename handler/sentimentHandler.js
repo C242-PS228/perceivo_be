@@ -23,19 +23,6 @@ const db = getFirestore(firebaseApp);
 
 import tagsTrigger from './event/addTagsTrigger.js';
 
-const testFirebase = async (req, res) => {
-  const { id } = req.params;
-
-  const docRef = doc(db, 'Comments', id);
-
-  await deleteDoc(docRef);
-
-  res.status(200).json({
-    status: 'success',
-    message: 'data successfully deleted',
-  });
-};
-
 /**
  * Handles /sentiment endpoint
  * @function
@@ -175,6 +162,13 @@ const showSentimentCommentsHandler = async (req, res) => {
       'SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
     const [rows] = await pool.query(query, [user.id, id]);
 
+    if (rows[0].comments_id === null) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'data not found!',
+      });
+    }
+
     if (rows.length > 0) {
       const docRef = doc(db, 'Comments', rows[0].comments_id);
       const docSnap = await getDoc(docRef);
@@ -204,6 +198,18 @@ const showSentimentCommentsHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /sentiment/:id/statistic endpoint
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and statistic data
+ * @description
+ * This endpoint is used to get the sentiment analysis result for a sentiment.
+ * The ID of sentiment will be taken from the request params.
+ * The data will be filtered by the user id in the request header.
+ * The response will contain the statistic data.
+ */
 const showSentimentStatisticHandler = async (req, res) => {
   // sentiment ID
   const { id } = req.params;
@@ -214,6 +220,13 @@ const showSentimentStatisticHandler = async (req, res) => {
     const query =
       'SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
     const [rows] = await pool.query(query, [user.id, id]);
+
+    if (rows[0].statistic_id === null) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'data not found!',
+      });
+    }
 
     if (rows.length > 0) {
       const docRef = doc(db, 'Predict', rows[0].statistic_id);
@@ -339,6 +352,18 @@ const createSentimentHandler = async (req, res) => {
 };
 
 
+/**
+ * Handles /sentiment/:id endpoint for deleting sentiment data
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and data
+ * @description
+ * This endpoint deletes sentiment data for a specific unique ID.
+ * It also deletes the associated comments and sentiment analysis result.
+ * The ID of sentiment will be taken from the request params.
+ * The data will be filtered by the user id in the request header.
+ */
 const deleteSentimentHandler = async (req, res) => {
   // sentiment ID
   const { id } = req.params;
@@ -351,8 +376,16 @@ const deleteSentimentHandler = async (req, res) => {
     const [rows] = await pool.query(query, [user.id, id]);
 
     if (rows.length > 0) {
-      const docRef = doc(db, 'Comments', rows[0].comments_id);
-      await deleteDoc(docRef);
+      if (rows[0].comments_id) {
+        const docRef = doc(db, 'Comments', rows[0].comments_id);
+        docRef.id && (await deleteDoc(docRef));
+      }
+
+      if (rows[0].statistic_id) {
+        const statisticDocRef = doc(db, 'Predict', rows[0].statistic_id);
+        statisticDocRef.id && (await deleteDoc(statisticDocRef));
+      }
+
       const query =
         'DELETE FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
       await pool.query(query, [user.id, id]);
@@ -375,7 +408,6 @@ const deleteSentimentHandler = async (req, res) => {
 };
 
 const sentimentHandler = {
-  testFirebase,
   showAllSentimentHandler,
   showSentimentHandler,
   createSentimentHandler,

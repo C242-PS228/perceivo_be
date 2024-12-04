@@ -1,6 +1,3 @@
-import express from 'express';
-const route = express.Router();
-
 import userHandler from '../handler/userHandler.js';
 import sentimentHandler from '../handler/sentimentHandler.js';
 import dashboardHandler from '../handler/dashboardHandler.js';
@@ -8,9 +5,11 @@ import tagsHandler from '../handler/tagsHandler.js';
 import jwtAuthToken from '../middleware/jwtAuthToken.js';
 import validation from '../middleware/validation.js';
 
-route.get('/', userHandler.baseUrlHandler);
+import express from 'express';
+const route = express.Router();
+const authRoute = route.use(jwtAuthToken);
 
-route.get('/dashboard', jwtAuthToken, dashboardHandler);
+route.get('/', userHandler.baseUrlHandler);
 
 // Login Register Route
 route.post('/login', validation.loginInputValidation, userHandler.loginHandler);
@@ -22,68 +21,55 @@ route.post(
   userHandler.registerHandler
 );
 
+authRoute.get('/dashboard', dashboardHandler);
+
 // Auth Section Route
-route.get('/profile', jwtAuthToken, userHandler.profileHandler);
-route.put('/profile', jwtAuthToken, userHandler.updateProfileHandler);
-route.put(
+authRoute.get('/profile', userHandler.profileHandler);
+authRoute.put('/profile', userHandler.updateProfileHandler);
+authRoute.put(
   '/profile/changepassword',
-  jwtAuthToken,
   validation.passwordValidation,
   userHandler.changePasswordHandler
 );
 
 // Sentiment Section Route
-route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
-
-route.post(
+authRoute.get('/sentiment', sentimentHandler.showAllSentimentHandler);
+authRoute.get(
+  '/sentiment/:id',
+  sentimentHandler.showSentimentHandler
+);
+authRoute.get(
+  '/sentiment/:id/comments',
+  sentimentHandler.showSentimentCommentsHandler
+);
+authRoute.get(
+  '/sentiment/:id/statistic',
+  sentimentHandler.showSentimentStatisticHandler
+);
+authRoute.post(
   '/sentiment',
-  jwtAuthToken,
   validation.sentimentValidation,
   sentimentHandler.createSentimentHandler
 );
-route.get(
+authRoute.delete(
   '/sentiment/:id',
-  jwtAuthToken,
-  sentimentHandler.showSentimentHandler
-);
-route.get(
-  '/sentiment/:id/comments',
-  jwtAuthToken,
-  sentimentHandler.showSentimentCommentsHandler
-);
-route.get(
-  '/sentiment/:id/statistic',
-  jwtAuthToken,
-  sentimentHandler.showSentimentStatisticHandler
-);
-route.delete(
-  '/sentiment/:id',
-  jwtAuthToken,
   sentimentHandler.deleteSentimentHandler
 );
 
-// Tags Section Route
-route.get('/tags', jwtAuthToken, tagsHandler.showAllTagsHandler);
-route.get('/tags/:unique_id', jwtAuthToken, tagsHandler.showTagHandler);
-route.post(
+// Tags Section authRoute
+authRoute.get('/tags', tagsHandler.showAllTagsHandler);
+authRoute.get('/tags/:unique_id', tagsHandler.showTagHandler);
+authRoute.post(
   '/tags',
-  jwtAuthToken,
   validation.tagNameValidation,
   tagsHandler.createTagHandler
 );
-route.put(
+authRoute.put(
   '/tags/:unique_id',
-  jwtAuthToken,
   validation.tagNameValidation,
   tagsHandler.updateTagHandler
 );
-
-route.delete('/tags/:unique_id', jwtAuthToken, tagsHandler.deleteTagHandler);
-
-route.post('/tagtest', jwtAuthToken, tagsHandler.checkTags);
-
-// Dedvelopment route
-route.delete('/firebasetest/:id', sentimentHandler.testFirebase);
+authRoute.delete('/tags/:unique_id', tagsHandler.deleteTagHandler);
 
 // ensure this route always last
 route.all('*', userHandler.missingUrlHandler);

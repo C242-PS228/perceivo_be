@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import pool from '../config/dbConfig.js';
 import { nanoid } from 'nanoid';
 const date = new Date();
@@ -101,9 +102,23 @@ const showTagHandler = async (req, res) => {
  */
 const createTagHandler = async (req, res) => {
   const data = req.body;
-  const uniqueId = nanoid(16);
 
   try {
+    let uniqueId = nanoid(16);
+    let isDuplicate = true;
+
+    while (isDuplicate) {
+      const [checkRows] = await pool.query(
+        'SELECT COUNT(*) as count FROM tb_tags WHERE unique_id = ?',
+        [uniqueId]
+      );
+      if (checkRows[0].count === 0) {
+        isDuplicate = false;
+      } else {
+        uniqueId = nanoid(16);
+      }
+    }
+
     const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
 
     const query =
@@ -118,6 +133,8 @@ const createTagHandler = async (req, res) => {
     if (rows.affectedRows > 0) {
       res.status(200).json({
         status: 'success',
+        unique_id: uniqueId,
+        tag_name: data.tag_name,
         message: `success add tag ${data.tag_name}`,
       });
     } else {
@@ -214,37 +231,12 @@ const deleteTagHandler = async (req, res) => {
   }
 };
 
-// dev
-const checkTags = async (req, res) => {
-  const { tags } = req.body;
-
-  try {
-    const query =
-      'SELECT id, tag_name FROM tb_tags WHERE user_id = ? AND tag_name IN (?)';
-    const [rows] = await pool.query(query, [req.user.id, tags]);
-
-    res.status(200).json({
-      status: 'success',
-      data: rows,
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      message: `error: ${error}`,
-    });
-  }
-
-  console.log(tags);
-};
-
 const tagsHandler = {
   showTagHandler,
   showAllTagsHandler,
   createTagHandler,
   updateTagHandler,
   deleteTagHandler,
-  // dev
-  checkTags,
 };
 
 export default tagsHandler;
