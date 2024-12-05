@@ -1,0 +1,462 @@
+{
+	"info": {
+		"_postman_id": "676fa6b1-dbd7-400a-9fed-f4c39c41427b",
+		"name": "Perceivo APIs Test",
+		"description": "Perceivo API, using Perceivo API Environment to set baseUrl",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39336331"
+	},
+	"item": [
+		{
+			"name": "register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"wahyu68\",\n    \"fullname\": \"<script>alert('Hacked!');</script>\",\n    \"address\": \"Surakarta Hacker Community\",\n    \"email\": \"wahyu68@gmail.com\",\n    \"password\": \"_kominfo:admin1234_\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmdWxsbmFtZSI6IiZsdDtzY3JpcHQmZ3Q7YWxlcnQoJ0hhY2tlZCEnKTsmbHQ7L3NjcmlwdCZndDsiLCJlbWFpbCI6IndhaHl1QGdtYWlsLmNvbSIsImFkZHJlc3MiOiJwYWNpdGFuIiwiY3JlYXRlZEF0IjoiMjAyNC0xMS0xMVQxNDo0NToxNS41MzZaIiwiaWF0IjoxNzMxMzM2MzI2LCJleHAiOjE3MzE0MjI3MjZ9.snhCodXqG2iXbUzVCHNsZzKVcnkXL8cYceAcArHU0qY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"wahyu68@gmail.com\",\n    \"password\": \"_kominfo:admin1234_\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"login"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "wahyu",
+							"disabled": true
+						},
+						{
+							"key": "amount",
+							"value": "10000",
+							"disabled": true
+						},
+						{
+							"key": "date",
+							"value": "2014-10-10 10:10:10",
+							"disabled": true
+						},
+						{
+							"key": "notes",
+							"value": "jasla",
+							"disabled": true
+						},
+						{
+							"key": "attachment",
+							"value": "asdmadad",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show profile",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyOTUxMjUsImV4cCI6MTczMzM4MTUyNX0.Rd9YlnFKct0sLXvRTc6bkJUo76j7LHWtqHbq9M8qo8s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/profile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update profile",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwibmFtZSI6ImZpdHJpIG5pbmcgYWxpc2lhIiwidXNlcm5hbWUiOiJmaXRyaTY4IiwidW5pcXVlSWQiOiJpZEFiTVNpQWxuUnEwRlBvIiwiZW1haWwiOiJmaXRyaUBnbWFpbC5jb20iLCJyb2xlIjoyLCJhZGRyZXNzIjoiVHVsdW5nYWd1bmcgamwgdHVsYW5nIHR1bHVuZyIsImdvb2dsZUlkIjpudWxsLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIzVDA2OjIyOjQ5LjAwMFoiLCJpYXQiOjE3MzI0MTg2NTUsImV4cCI6MTczMjUwNTA1NX0.3_5Ot1wKnxzU5SmDZPOw5Lp3elK0zFVbKjqqpgoWYIw",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"fullname\": \"\" \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/dev/profile",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"dev",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create sentiment",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyODU3MzAsImV4cCI6MTczMzM3MjEzMH0.VTuu2Ueo61it7KwDsXZg25Oxgh4wv3aBnLB74ITska4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"link\": \"https://youtu.be/B8vtnVWrR64?si=o6WNNBRUc41qEDiX\",\n    \"platformName\": \"youtube\",\n    \"tags\": [\"Dingin\", \"Villain\"]\n    // \"resultLimit\": 50\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/sentiment",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"sentiment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show all sentiment",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyODU3MzAsImV4cCI6MTczMzM3MjEzMH0.VTuu2Ueo61it7KwDsXZg25Oxgh4wv3aBnLB74ITska4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/sentiment",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"sentiment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show sentiment detail",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyODU3MzAsImV4cCI6MTczMzM3MjEzMH0.VTuu2Ueo61it7KwDsXZg25Oxgh4wv3aBnLB74ITska4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/sentiment/3XKGE4Ff-nj_3BhV",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"sentiment",
+						"3XKGE4Ff-nj_3BhV"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show sentiment detail comments",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMxNTM2OTgsImV4cCI6MTczMzI0MDA5OH0.Bei9f3Lg4PytfZwjnvPaLlfrVQpa7-1BITmz2Fsr8kA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/sentiment/wgrmcVMXTlbolQZw/comments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"sentiment",
+						"wgrmcVMXTlbolQZw",
+						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show sentiment detail statistic",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyOTUxMjUsImV4cCI6MTczMzM4MTUyNX0.Rd9YlnFKct0sLXvRTc6bkJUo76j7LHWtqHbq9M8qo8s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/sentiment/wgrmcVMXTlbolQZw/statistic",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"sentiment",
+						"wgrmcVMXTlbolQZw",
+						"statistic"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete sentiment",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyOTUxMjUsImV4cCI6MTczMzM4MTUyNX0.Rd9YlnFKct0sLXvRTc6bkJUo76j7LHWtqHbq9M8qo8s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/sentiment/8rO8C12T3TMNXiVJ",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"sentiment",
+						"8rO8C12T3TMNXiVJ"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add Tags",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyOTUxMjUsImV4cCI6MTczMzM4MTUyNX0.Rd9YlnFKct0sLXvRTc6bkJUo76j7LHWtqHbq9M8qo8s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"tag_name\": \"Wahyu\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tags",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tags"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show Tags Detail",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyOTUxMjUsImV4cCI6MTczMzM4MTUyNX0.Rd9YlnFKct0sLXvRTc6bkJUo76j7LHWtqHbq9M8qo8s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/tags/g-_VppDoI86fTnNu",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tags",
+						"g-_VppDoI86fTnNu"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show all tags",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyMDY5MzYsImV4cCI6MTczMzI5MzMzNn0.g_0P7ccuBEOl33ctS3xQssDpjWJQ1gHk88W_-oDmHGg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/tags",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tags"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete Tags",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IktpIFdhaHl1IFdpY2Frc29ubyIsInVzZXJuYW1lIjoiZnJlZWZpcmUiLCJ1bmlxdWVJZCI6IlEtRkUwUzIwTlVSc21McV8iLCJlbWFpbCI6IndhaHl1NjhAZ21haWwuY29tIiwicm9sZSI6MiwiYWRkcmVzcyI6IlBhY2l0YW4gRWFzdCBKYXZhU2NyaXB0IiwiZ29vZ2xlSWQiOiIiLCJjcmVhdGVkQXQiOiIyMDI0LTExLTIxVDE5OjU1OjQ3LjAwMFoiLCJpYXQiOjE3MzMyOTUxMjUsImV4cCI6MTczMzM4MTUyNX0.Rd9YlnFKct0sLXvRTc6bkJUo76j7LHWtqHbq9M8qo8s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/tags/g-_VppDoI86fTnNu",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tags",
+						"g-_VppDoI86fTnNu"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
