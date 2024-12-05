@@ -7,7 +7,6 @@ import validation from '../middleware/validation.js';
 
 import express from 'express';
 const route = express.Router();
-const authRoute = route.use(jwtAuthToken);
 
 route.get('/', userHandler.baseUrlHandler);
 
@@ -21,55 +20,63 @@ route.post(
   userHandler.registerHandler
 );
 
-authRoute.get('/dashboard', dashboardHandler);
+route.get('/dashboard', dashboardHandler);
 
 // Auth Section Route
-authRoute.get('/profile', userHandler.profileHandler);
-authRoute.put('/profile', userHandler.updateProfileHandler);
-authRoute.put(
+route.get('/profile', jwtAuthToken, userHandler.profileHandler);
+route.put('/profile', jwtAuthToken, userHandler.updateProfileHandler);
+route.put(
   '/profile/changepassword',
+  jwtAuthToken,
   validation.passwordValidation,
   userHandler.changePasswordHandler
 );
 
 // Sentiment Section Route
-authRoute.get('/sentiment', sentimentHandler.showAllSentimentHandler);
-authRoute.get(
+route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
+route.get(
   '/sentiment/:id',
+  jwtAuthToken,
   sentimentHandler.showSentimentHandler
 );
-authRoute.get(
+route.get(
   '/sentiment/:id/comments',
+  jwtAuthToken,
   sentimentHandler.showSentimentCommentsHandler
 );
-authRoute.get(
+route.get(
   '/sentiment/:id/statistic',
+  jwtAuthToken,
   sentimentHandler.showSentimentStatisticHandler
 );
-authRoute.post(
+route.post(
   '/sentiment',
+  jwtAuthToken,
   validation.sentimentValidation,
   sentimentHandler.createSentimentHandler
 );
-authRoute.delete(
+route.delete(
   '/sentiment/:id',
+  jwtAuthToken,
   sentimentHandler.deleteSentimentHandler
 );
 
-// Tags Section authRoute
-authRoute.get('/tags', tagsHandler.showAllTagsHandler);
-authRoute.get('/tags/:unique_id', tagsHandler.showTagHandler);
-authRoute.post(
+// Tags Section route
+route.get('/tags', jwtAuthToken, tagsHandler.showAllTagsHandler);
+route.get('/tags/:unique_id', jwtAuthToken, tagsHandler.showTagHandler);
+route.post(
   '/tags',
+  jwtAuthToken,
   validation.tagNameValidation,
   tagsHandler.createTagHandler
 );
-authRoute.put(
+route.put(
   '/tags/:unique_id',
+  jwtAuthToken,
   validation.tagNameValidation,
   tagsHandler.updateTagHandler
 );
-authRoute.delete('/tags/:unique_id', tagsHandler.deleteTagHandler);
+route.delete('/tags/:unique_id', jwtAuthToken, tagsHandler.deleteTagHandler);
 
 // ensure this route always last
 route.all('*', userHandler.missingUrlHandler);
