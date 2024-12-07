@@ -105,6 +105,89 @@ const showSentimentHandler = async (req, res) => {
   }
 };
 
+const showSentimentsWithPaginationHandler = async (req, res) => {
+  const { limit, page } = req.params; // Limit: jumlah data per halaman, Page: halaman saat ini
+  const user = req.user;
+
+  try {
+    // Hitung offset berdasarkan limit dan halaman
+    const offset = (page - 1) * limit;
+
+    // Query untuk menghitung total data
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM tb_sentiments
+      WHERE user_id = ?;
+    `;
+    const [countResult] = await pool.query(countQuery, [user.id]);
+    const totalData = countResult[0]?.total || 0;
+
+    // Hitung total halaman
+    const totalPages = Math.ceil(totalData / limit);
+
+    // Query untuk mengambil data dengan paginasi
+    const dataQuery = `
+      SELECT 
+        s.id AS sentiment_id,
+        s.unique_id AS sentiment_unique_id,
+        t.tag_name,
+        s.platform,
+        s.sentiment_link,
+        s.created_at AS sentiment_created_at,
+        s.comments_id,
+        s.statistic_id
+      FROM 
+        tb_sentiments s
+      LEFT JOIN 
+        tb_sentiment_tags st ON s.id = st.sentiment_id
+      LEFT JOIN 
+        tb_tags t ON st.tag_id = t.id
+      WHERE 
+        s.user_id = ?
+      LIMIT ? OFFSET ?;
+    `;
+
+    // Eksekusi query data
+    const [rows] = await pool.query(dataQuery, [user.id, parseInt(limit), parseInt(offset)]);
+
+    if (rows.length > 0) {
+      const sentimentData = rows.map(row => ({
+        id: row.sentiment_id,
+        unique_id: row.sentiment_unique_id,
+        platform: row.platform,
+        sentiment_link: row.sentiment_link,
+        sentiment_created_at: row.sentiment_created_at,
+        sentiment_statistic_id: row.statistic_id,
+        comments_id: row.comments_id,
+        tags: row.tag_name ? [row.tag_name] : [], // Tag dapat diambil langsung jika tidak null
+      }));
+
+      res.status(200).json({
+        status: 'success',
+        data: sentimentData,
+        pagination: {
+          currentPage: parseInt(page),
+          dataPerPage: parseInt(limit),
+          totalData,
+          totalPages,
+        },
+      });
+    } else {
+      res.status(404).json({
+        status: 'fail',
+        message: 'No sentiment data found for the specified page!',
+      });
+    }
+  } catch (e) {
+    return res.status(400).json({
+      status: 'fail',
+      message: `Error: ${e.message}`,
+    });
+  }
+};
+
+
+
 
 /**
  * Handles /sentiment/:id/comments endpoint
@@ -378,8 +461,9 @@ const sentimentHandler = {
   showSentimentHandler,
   createSentimentHandler,
   showSentimentCommentsHandler,
+  showSentimentsWithPaginationHandler,
   deleteSentimentHandler,
-  showSentimentStatisticHandler
+  showSentimentStatisticHandler,
 };
 
 export default sentimentHandler;
