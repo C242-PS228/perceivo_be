@@ -3,15 +3,26 @@ import platform from '../config/platformConfig.js';
 import inputConfig from '../config/platformParamConfig.js';
 import filteredComment from '../src/structure/sentimentFilteredComments.js';
 import pool from '../config/dbConfig.js';
-import { PredictTrigger } from './event/sentimentPredictTrigger.js';
+import sentimentPredictTrigger from './event/sentimentPredictTrigger.js';
+import { initializeApp } from 'firebase/app';
 const date = new Date();
 import {
-  addDocument,
-  getDocument,
-  deleteDocument,
-} from './service/firestoreOperations.js';
+  collection,
+  getFirestore,
+  doc,
+  getDoc,
+  addDoc,
+  deleteDoc,
+} from 'firebase/firestore';
+import firebaseConfig from '../config/firebaseConfig.js';
 import apifyConnect from '../config/apifyConfig.js';
+
+import { addDocument, getAllDocuments } from './service/firestoreOperations.js';
+
 import { nanoid } from 'nanoid';
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 import tagsTrigger from './event/addTagsTrigger.js';
 
@@ -49,7 +60,7 @@ const showAllSentimentHandler = async (req, res) => {
  * parameters, and the data is filtered by the user ID in the request header.
  */
 const showSentimentHandler = async (req, res) => {
-  const { id } = req.params; // Sentiment ID
+  const { id } = req.params; // sentiment ID
   const user = req.user;
 
   try {
@@ -91,6 +102,28 @@ const showSentimentHandler = async (req, res) => {
         tags,
       };
 
+      if (sentimentData.sentiment_statistic_id) {
+        const statisticDocRef = doc(db, 'Predict', sentimentData.sentiment_statistic_id);
+        const statisticDocSnap = await getDoc(statisticDocRef);
+
+        if (statisticDocSnap.exists()) {
+          sentimentData.statistic = statisticDocSnap.data() || [];
+        } else {
+          sentimentData.statistic = [];
+        }
+      }
+
+      if (sentimentData.comments_id) {
+        const docRef = doc(db, 'Comments', sentimentData.comments_id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          sentimentData.comments = docSnap.data().filteredComments || [];
+        } else {
+          sentimentData.comments = [];
+        }
+      }
+
       res.status(200).json({
         status: 'success',
         data: sentimentData,
@@ -99,91 +132,6 @@ const showSentimentHandler = async (req, res) => {
       res.status(404).json({
         status: 'fail',
         message: 'Sentiment data not found!',
-      });
-    }
-  } catch (e) {
-    return res.status(400).json({
-      status: 'fail',
-      message: `Error: ${e.message}`,
-    });
-  }
-};
-
-const showSentimentsWithPaginationHandler = async (req, res) => {
-  const { limit, page } = req.params; // Limit: jumlah data per halaman, Page: halaman saat ini
-  const user = req.user;
-
-  try {
-    // Hitung offset berdasarkan limit dan halaman
-    const offset = (page - 1) * limit;
-
-    // Query untuk menghitung total data
-    const countQuery = `
-      SELECT COUNT(*) AS total
-      FROM tb_sentiments
-      WHERE user_id = ?;
-    `;
-    const [countResult] = await pool.query(countQuery, [user.id]);
-    const totalData = countResult[0]?.total || 0;
-
-    // Hitung total halaman
-    const totalPages = Math.ceil(totalData / limit);
-
-    // Query untuk mengambil data dengan paginasi
-    const dataQuery = `
-      SELECT 
-        s.id AS sentiment_id,
-        s.unique_id AS sentiment_unique_id,
-        t.tag_name,
-        s.platform,
-        s.sentiment_link,
-        s.created_at AS sentiment_created_at,
-        s.comments_id,
-        s.statistic_id
-      FROM 
-        tb_sentiments s
-      LEFT JOIN 
-        tb_sentiment_tags st ON s.id = st.sentiment_id
-      LEFT JOIN 
-        tb_tags t ON st.tag_id = t.id
-      WHERE 
-        s.user_id = ?
-      LIMIT ? OFFSET ?;
-    `;
-
-    // Eksekusi query data
-    const [rows] = await pool.query(dataQuery, [
-      user.id,
-      parseInt(limit),
-      parseInt(offset),
-    ]);
-
-    if (rows.length > 0) {
-      const sentimentData = rows.map((row) => ({
-        id: row.sentiment_id,
-        unique_id: row.sentiment_unique_id,
-        platform: row.platform,
-        sentiment_link: row.sentiment_link,
-        sentiment_created_at: row.sentiment_created_at,
-        sentiment_statistic_id: row.statistic_id,
-        comments_id: row.comments_id,
-        tags: row.tag_name ? [row.tag_name] : [], // Tag dapat diambil langsung jika tidak null
-      }));
-
-      res.status(200).json({
-        status: 'success',
-        data: sentimentData,
-        pagination: {
-          currentPage: parseInt(page),
-          dataPerPage: parseInt(limit),
-          totalData,
-          totalPages,
-        },
-      });
-    } else {
-      res.status(404).json({
-        status: 'fail',
-        message: 'No sentiment data found for the specified page!',
       });
     }
   } catch (e) {
@@ -207,49 +155,48 @@ const showSentimentsWithPaginationHandler = async (req, res) => {
  * The response will contain the comments.
  */
 const showSentimentCommentsHandler = async (req, res) => {
-  // Sentiment ID dari parameter
+  // sentiment ID
   const { id } = req.params;
 
-  // User dari request
   const user = req.user;
 
   try {
-    // Query ke database untuk mendapatkan komentar terkait
     const query =
       'SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
     const [rows] = await pool.query(query, [user.id, id]);
-    console.log(query);
 
-    // Jika `comments_id` tidak ditemukan
-    if (!rows.length || rows[0].comments_id === null) {
+    if (rows[0].comments_id === null) {
       return res.status(404).json({
         status: 'fail',
-        message: 'Data not found!',
+        message: 'data not found!',
       });
     }
 
-    // Ambil dokumen dari Firestore berdasarkan ID
-    const commentsId = rows[0].comments_id;
-    const docRef = await getDocument('Comments', commentsId);
+    if (rows.length > 0) {
+      const docRef = doc(db, 'Comments', rows[0].comments_id);
+      const docSnap = await getDoc(docRef);
 
-    // Jika dokumen ditemukan, kembalikan data
-    if (docRef) {
-      return res.status(200).json({
-        status: 'success',
-        data: docRef.filteredComments || [], // Asumsikan data ada di `filteredComments`
+      if (docSnap.exists()) {
+        res.status(200).json({
+          status: 'success',
+          data: docSnap.data().filteredComments || [],
+        });
+      } else {
+        res.status(404).json({
+          status: 'fail',
+          message: 'data not found!',
+        });
+      }
+    } else {
+      res.status(404).json({
+        status: 'fail',
+        message: 'data not found!',
       });
     }
-
-    // Jika dokumen tidak ditemukan
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Data not found!',
-    });
   } catch (e) {
-    // Tangani error
     return res.status(400).json({
       status: 'fail',
-      message: `Error: ${e.message}`,
+      message: `error: ${e}`,
     });
   }
 };
@@ -285,13 +232,13 @@ const showSentimentStatisticHandler = async (req, res) => {
     }
 
     if (rows.length > 0) {
-      const statisticId = rows[0].statistic_id;
-      const docRef = await getDocument('Statistic', statisticId);
+      const docRef = doc(db, 'Predict', rows[0].statistic_id);
+      const docSnap = await getDoc(docRef);
 
-      if (docRef) {
+      if (docSnap.exists()) {
         res.status(200).json({
           status: 'success',
-          data: docRef || [],
+          data: docSnap.data(),
         });
       } else {
         res.status(404).json({
@@ -326,7 +273,7 @@ const showSentimentStatisticHandler = async (req, res) => {
  * The response will contain the sentiment id and the filtered comments.
  */
 const createSentimentHandler = async (req, res) => {
-  const { title, link, platformName, resultLimit, tags } = req.body;
+  const { link, platformName, resultLimit, tags } = req.body;
 
   try {
     let uniqueId = nanoid(16);
@@ -361,47 +308,33 @@ const createSentimentHandler = async (req, res) => {
     }
 
     const filteredComments = filteredComment(describePlatform.name, comments);
+    // console.log(filteredComments);
+    const docRef = await addDoc(collection(db, 'Comments'), {
+      filteredComments,
+    });
 
-    console.log(filteredComments);
-    // firebase add comments data
-    const docRef = await addDocument('Comments', { filteredComments });
-    console.log(docRef);
+    // Kirim data ke Firestore
+    // const docRef = await addDocument('Comments', { filteredComments });
 
-    const statistic_id = await PredictTrigger(filteredComments);
+    const statistic_id = await sentimentPredictTrigger(filteredComments);
+    // const statistic_id = 'asdnakdasagasdf;;';
 
     // db config section
     const formattedLinks = Array.isArray(link) ? link.join(', ') : link;
-    const formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
     const user = req.user;
 
-    let query;
-    let rows;
-    if (title) {
-      query =
-        'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-      [rows] = await pool.query(query, [
-        uniqueId,
-        title,
-        user.id,
-        describePlatform.name,
-        formattedLinks,
-        docRef,
-        statistic_id,
-        formattedDate,
-      ]);
-    } else {
-      query =
-        'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)';
-      [rows] = await pool.query(query, [
-        uniqueId,
-        user.id,
-        describePlatform.name,
-        formattedLinks,
-        docRef,
-        statistic_id,
-        formattedDate,
-      ]);
-    }
+    const query =
+      'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) value (?, ?, ?, ?, ?, ?, ?)';
+    const [rows] = await pool.query(query, [
+      uniqueId,
+      user.id,
+      describePlatform.name,
+      formattedLinks,
+      docRef.id,
+      statistic_id,
+      formattedDate,
+    ]);
 
     // Trigger add tags
     if (Array.isArray(tags) && tags.length > 0) {
@@ -411,7 +344,6 @@ const createSentimentHandler = async (req, res) => {
     res.status(200).json({
       status: 'success',
       message: 'success add analyst',
-      title: title,
       tags: tags,
       sentimentId: uniqueId,
       commentsId: docRef.id,
@@ -422,7 +354,7 @@ const createSentimentHandler = async (req, res) => {
   } catch (e) {
     res.status(500).json({
       status: 'fail',
-      message: `error: ${e}`,
+      message: `error: ${e}`
     });
   }
 };
@@ -453,11 +385,13 @@ const deleteSentimentHandler = async (req, res) => {
 
     if (rows.length > 0) {
       if (rows[0].comments_id) {
-        await deleteDocument('Comments', rows[0].comments_id);
+        const docRef = doc(db, 'Comments', rows[0].comments_id);
+        docRef.id && (await deleteDoc(docRef));
       }
 
       if (rows[0].statistic_id) {
-        await deleteDocument('Statistic', rows[0].statistic_id);
+        const statisticDocRef = doc(db, 'Predict', rows[0].statistic_id);
+        statisticDocRef.id && (await deleteDoc(statisticDocRef));
       }
 
       const query =
@@ -486,9 +420,8 @@ const sentimentHandler = {
   showSentimentHandler,
   createSentimentHandler,
   showSentimentCommentsHandler,
-  showSentimentsWithPaginationHandler,
   deleteSentimentHandler,
-  showSentimentStatisticHandler,
+  showSentimentStatisticHandler
 };
 
 export default sentimentHandler;
