@@ -362,10 +362,8 @@ const createSentimentHandler = async (req, res) => {
 
     const filteredComments = filteredComment(describePlatform.name, comments);
 
-    console.log(filteredComments);
     // firebase add comments data
     const docRef = await addDocument('Comments', { filteredComments });
-    console.log(docRef);
 
     const statistic_id = await PredictTrigger(filteredComments);
 
