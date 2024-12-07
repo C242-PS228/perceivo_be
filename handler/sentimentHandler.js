@@ -5,7 +5,11 @@ import filteredComment from '../src/structure/sentimentFilteredComments.js';
 import pool from '../config/dbConfig.js';
 import { PredictTrigger } from './event/sentimentPredictTrigger.js';
 const date = new Date();
-import { addDocument, getDocumentById, deleteDocument } from './service/firestoreOperations.js';
+import {
+  addDocument,
+  getDocumentById,
+  deleteDocument,
+} from './service/firestoreOperations.js';
 import apifyConnect from '../config/apifyConfig.js';
 import { nanoid } from 'nanoid';
 
@@ -148,10 +152,14 @@ const showSentimentsWithPaginationHandler = async (req, res) => {
     `;
 
     // Eksekusi query data
-    const [rows] = await pool.query(dataQuery, [user.id, parseInt(limit), parseInt(offset)]);
+    const [rows] = await pool.query(dataQuery, [
+      user.id,
+      parseInt(limit),
+      parseInt(offset),
+    ]);
 
     if (rows.length > 0) {
-      const sentimentData = rows.map(row => ({
+      const sentimentData = rows.map((row) => ({
         id: row.sentiment_id,
         unique_id: row.sentiment_unique_id,
         platform: row.platform,
@@ -185,9 +193,6 @@ const showSentimentsWithPaginationHandler = async (req, res) => {
     });
   }
 };
-
-
-
 
 /**
  * Handles /sentiment/:id/comments endpoint
@@ -247,7 +252,6 @@ const showSentimentCommentsHandler = async (req, res) => {
     });
   }
 };
-
 
 /**
  * Handles /sentiment/:id/statistic endpoint
@@ -321,7 +325,7 @@ const showSentimentStatisticHandler = async (req, res) => {
  * The response will contain the sentiment id and the filtered comments.
  */
 const createSentimentHandler = async (req, res) => {
-  const { link, platformName, resultLimit, tags } = req.body;
+  const { title, link, platformName, resultLimit, tags } = req.body;
 
   try {
     let uniqueId = nanoid(16);
@@ -367,17 +371,32 @@ const createSentimentHandler = async (req, res) => {
     const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
     const user = req.user;
 
-    const query =
-      'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) value (?, ?, ?, ?, ?, ?, ?)';
-    const [rows] = await pool.query(query, [
-      uniqueId,
-      user.id,
-      describePlatform.name,
-      formattedLinks,
-      docRef,
-      statistic_id,
-      formattedDate,
-    ]);
+    if (title) {
+      const query =
+        'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) value (?, ?, ?, ?, ?, ?, ?, ?)';
+      const [rows] = await pool.query(query, [
+        uniqueId,
+        title,
+        user.id,
+        describePlatform.name,
+        formattedLinks,
+        docRef,
+        statistic_id,
+        formattedDate,
+      ]);
+    } else {
+      const query =
+        'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) value (?, ?, ?, ?, ?, ?, ?)';
+      const [rows] = await pool.query(query, [
+        uniqueId,
+        user.id,
+        describePlatform.name,
+        formattedLinks,
+        docRef,
+        statistic_id,
+        formattedDate,
+      ]);
+    }
 
     // Trigger add tags
     if (Array.isArray(tags) && tags.length > 0) {
@@ -387,6 +406,7 @@ const createSentimentHandler = async (req, res) => {
     res.status(200).json({
       status: 'success',
       message: 'success add analyst',
+      title: title,
       tags: tags,
       sentimentId: uniqueId,
       commentsId: docRef.id,
@@ -397,11 +417,10 @@ const createSentimentHandler = async (req, res) => {
   } catch (e) {
     res.status(500).json({
       status: 'fail',
-      message: `error: ${e}`
+      message: `error: ${e}`,
     });
   }
 };
-
 
 /**
  * Handles /sentiment/:id endpoint for deleting sentiment data
