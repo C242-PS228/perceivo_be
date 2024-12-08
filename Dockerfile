@@ -11,7 +11,7 @@ COPY . .
 # APP
 ENV APP_ENV=production
 ENV APP_HOST=localhost
-ENV APP_PORT=3000
+ENV APP_PORT=8080
 ENV APP_VERSION=1.0.0-beta
 
 # JWT
@@ -46,7 +46,7 @@ ENV FIRESTORE_CREDENTIALS=./credentials/serviceCredentials.json;
 
 ENV ML_FASTAPI=https://perceivo-fastapi-ml-132823030367.asia-southeast2.run.app/predict
 
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["npm", "run", "start:prod"]
 
