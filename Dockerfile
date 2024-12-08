@@ -44,7 +44,7 @@ ENV DB_PASS=_kominfo:admin1234_
 
 # ENV FIRESTORE_CREDENTIALS=./credentials/serviceCredentials.json;
 
-ENV ML_FASTAPI=https://perceivo-fastapi-ml-132823030367.asia-southeast2.run.app/predict
+ENV ML_FASTAPI=https://ml-fastapi-v2-132823030367.asia-southeast2.run.app/predict
 
 EXPOSE 8080
 
