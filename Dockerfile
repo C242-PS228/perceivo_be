@@ -28,7 +28,7 @@ ENV APIFY_API_KEY=apify_api_l2kcKwd666TfUk50H5r16tCoIGuTZd0iuWax
 # ENV DB_PASS=bTD4HjqwgM
 
 # Database
-ENV DB_HOST=34.50.65.51 
+ENV DB_HOST=35.219.125.240
 ENV DB_NAME=perceivodb
 ENV DB_USER=perceivo
 ENV DB_PASS=_kominfo:admin1234_
