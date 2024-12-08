@@ -22,10 +22,16 @@ ENV JWT_EXPIRES_IN=1d
 ENV APIFY_API_KEY=apify_api_l2kcKwd666TfUk50H5r16tCoIGuTZd0iuWax
 
 # Database
-ENV DB_HOST=sql12.freesqldatabase.com
-ENV DB_NAME=sql12746400
-ENV DB_USER=sql12746400
-ENV DB_PASS=bTD4HjqwgM
+# ENV DB_HOST=sql12.freesqldatabase.com
+# ENV DB_NAME=sql12746400
+# ENV DB_USER=sql12746400
+# ENV DB_PASS=bTD4HjqwgM
+
+# Database
+ENV DB_HOST=34.50.65.51 
+ENV DB_NAME=perceivodb
+ENV DB_USER=perceivo
+ENV DB_PASS=_kominfo:admin1234_
 
 # Firebase
 # ENV FIREBASE_API_KEY=AIzaSyAHOuUmx0i1bW62yAePUq7pR8RpWI6AWBM
