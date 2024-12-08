@@ -1,55 +1,45 @@
 import pool from '../../config/dbConfig.js';
 import { nanoid } from 'nanoid';
 
-const tagsTrigger = async (tags, user, insertId) => {
+const tagsTrigger = async (tags, user, sentimentId) => {
+  if (!Array.isArray(tags) || tags.length === 0) {
+    throw new Error('Tags must be a non-empty array');
+  }
+
   try {
-    const tagsArray = Array.isArray(tags) ? tags : [tags];
+    for (const tag of tags) {
+      const [existingTag] = await pool.query(
+        'SELECT id FROM tb_tags WHERE tag_name = ?',
+        [tag]
+      );
 
-    const checkQuery =
-      'SELECT id, tag_name FROM tb_tags WHERE user_id = ? AND tag_name IN (?)';
-    const [getrows] = await pool.query(checkQuery, [user.id, tagsArray]);
+      let tagId;
 
-    const existingTags = getrows.map((tag) => tag.tag_name);
-    const newTags = tagsArray.filter((tag) => !existingTags.includes(tag));
+      if (existingTag.length > 0) {
+        tagId = existingTag[0].id;
+      } else {
+        const uniqueId = nanoid(16);
+        const formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const query =
+          'INSERT INTO tb_tags (unique_id, user_id, tag_name, created_at) VALUES (?, ?, ?, ?)';
+        const [rows] = await pool.query(query, [
+          uniqueId,
+          user.id,
+          tag,
+          formattedDate,
+        ]);
 
-    if (newTags.length > 0) {
-      const tagValues = [];
-
-      for (const tag of newTags) {
-        let uniqueId = nanoid(16);
-        let isDuplicate = true;
-
-        while (isDuplicate) {
-          const [checkRows] = await pool.query(
-            'SELECT COUNT(*) as count FROM tb_tags WHERE unique_id = ?',
-            [uniqueId]
-          );
-          if (checkRows[0].count === 0) {
-            isDuplicate = false;
-          } else {
-            uniqueId = nanoid(16);
-          }
-        }
-
-        tagValues.push([user.id, tag, uniqueId]);
+        tagId = rows.insertId;
       }
 
-      const insertTagsQuery =
-        'INSERT INTO tb_tags (user_id, tag_name, unique_id) VALUES ?';
-      await pool.query(insertTagsQuery, [tagValues]);
-
-      const [newRows] = await pool.query(checkQuery, [user.id, tagsArray]);
-      getrows.push(...newRows);
+      await pool.query(
+        'INSERT INTO tb_sentiment_tags (sentiment_id, tag_id) VALUES (?, ?)',
+        [sentimentId, tagId]
+      );
     }
-
-    const tagValuesToLink = getrows.map((tag) => [insertId, tag.id]);
-    const insertQuery =
-      'INSERT INTO tb_sentiment_tags (sentiment_id, tag_id) VALUES ?';
-    await pool.query(insertQuery, [tagValuesToLink]);
-
   } catch (error) {
-    console.error(error);
-    return false;
+    console.error('Error in tagsTrigger:', error);
+    throw new Error('Failed to process tags');
   }
 };
 

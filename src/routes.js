@@ -25,6 +25,8 @@ route.put('/profile/changepassword', jwtAuthToken, validation.passwordValidation
 // Sentiment Section Route
 route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
 route.get('/sentiment/:id', jwtAuthToken, sentimentHandler.showSentimentHandler);
+route.get('/sentiment/:id/all', jwtAuthToken, sentimentHandler.showSentimentDetailsHandler);
+route.get('/sentiment/p/:limit', jwtAuthToken, sentimentHandler.showSentimentLimitHandler);
 route.get('/sentiment/p/:limit/:page', jwtAuthToken, sentimentHandler.showSentimentsWithPaginationHandler);
 route.get('/sentiment/:id/comments', jwtAuthToken, sentimentHandler.showSentimentCommentsHandler);
 route.get('/sentiment/:id/statistic', jwtAuthToken, sentimentHandler.showSentimentStatisticHandler);
