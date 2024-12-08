@@ -442,7 +442,14 @@ const showSentimentStatisticHandler = async (req, res) => {
  * The response will contain the sentiment id and the filtered comments.
  */
 const createSentimentHandler = async (req, res) => {
-  const { title, link, platformName, resultLimit, tags } = req.body;
+  const { title, link, platformName, resultLimit, tags } = req.body || {};
+
+  if (!req.body) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Request body is missing or invalid',
+    });
+  }
 
   try {
     let uniqueId = nanoid(16);
@@ -460,30 +467,32 @@ const createSentimentHandler = async (req, res) => {
       }
     }
 
-    const describePlatform = platform.filter(
-      (item) => item.name == platformName
-    )[0];
-    const input = inputConfig(platformName, link, resultLimit);
+    const describePlatform = platform.find(
+      (item) => item.name === platformName
+    );
 
-    // development area
+    if (!describePlatform) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Invalid platform name',
+      });
+    }
+
+    const input = inputConfig(platformName, link, resultLimit);
     const comments = await apifyConnect(input, describePlatform.actor);
 
     if (!comments) {
-      res.status(404).json({
+      return res.status(404).json({
         status: 'fail',
-        message: 'comments not found!',
+        message: 'Comments not found!',
       });
-      return;
     }
 
     const filteredComments = filteredComment(describePlatform.name, comments);
 
-    // firebase add comments data
     const docRef = await addDocument('Comments', { filteredComments });
-
     const statistic_id = await PredictTrigger(filteredComments);
 
-    // db config section
     const formattedLinks = Array.isArray(link) ? link.join(', ') : link;
     const formattedDate = new Date()
       .toISOString()
@@ -520,14 +529,13 @@ const createSentimentHandler = async (req, res) => {
       ]);
     }
 
-    // Trigger add tags
     if (Array.isArray(tags) && tags.length > 0) {
       await tagsTrigger(tags, user, rows.insertId);
     }
 
     res.status(200).json({
       status: 'success',
-      message: 'success add analyst',
+      message: 'Success add analyst',
       title: title,
       tags: tags,
       sentimentId: uniqueId,
@@ -539,10 +547,11 @@ const createSentimentHandler = async (req, res) => {
   } catch (e) {
     res.status(500).json({
       status: 'fail',
-      message: `error: ${e}`,
+      message: `Error: ${e.message}`,
     });
   }
 };
+
 
 /**
  * Handles /sentiment/:id endpoint for deleting sentiment data
