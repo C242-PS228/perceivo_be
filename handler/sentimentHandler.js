@@ -57,6 +57,7 @@ const showSentimentHandler = async (req, res) => {
       SELECT 
         s.id AS sentiment_id,
         s.unique_id AS sentiment_unique_id,
+        s.title,
         t.tag_name,
         s.platform,
         s.sentiment_link,
@@ -83,6 +84,7 @@ const showSentimentHandler = async (req, res) => {
       const sentimentData = {
         id: rows[0].sentiment_id,
         unique_id: rows[0].sentiment_unique_id,
+        title: rows[0].title,
         platform: rows[0].platform,
         sentiment_link: rows[0].sentiment_link,
         sentiment_created_at: rows[0].sentiment_created_at,
@@ -105,6 +107,120 @@ const showSentimentHandler = async (req, res) => {
     return res.status(400).json({
       status: 'fail',
       message: `Error: ${e.message}`,
+    });
+  }
+};
+
+const showSentimentDetailsHandler = async (req, res) => {
+  const { id } = req.params; // Sentiment ID
+  const user = req.user;
+
+  try {
+    const query = `
+        SELECT 
+          s.id AS sentiment_id,
+          s.unique_id AS sentiment_unique_id,
+          s.title,
+          t.tag_name,
+          s.platform,
+          s.sentiment_link,
+          s.created_at AS sentiment_created_at,
+          s.comments_id,
+          s.statistic_id
+        FROM 
+          tb_sentiments s
+        LEFT JOIN 
+          tb_sentiment_tags st ON s.id = st.sentiment_id
+        LEFT JOIN 
+          tb_tags t ON st.tag_id = t.id
+        WHERE 
+          s.user_id = ? AND s.unique_id = ?;
+      `;
+
+    const [rows] = await pool.query(query, [user.id, id]);
+    const commentsId = rows[0].comments_id;
+    const statisticId = rows[0].statistic_id;
+
+    if (rows.length > 0) {
+      const tags = rows
+        .filter((row) => row.tag_name !== null) // Hanya ambil tag_name yang ada
+        .map((row) => row.tag_name);
+
+      const sentimentData = {
+        id: rows[0].sentiment_id,
+        unique_id: rows[0].sentiment_unique_id,
+        title: rows[0].title,
+        platform: rows[0].platform,
+        sentiment_link: rows[0].sentiment_link,
+        sentiment_created_at: rows[0].sentiment_created_at,
+        sentiment_statistic_id: statisticId,
+        comments_id: commentsId,
+        tags,
+      };
+
+      if (statisticId) {
+        const docRefStatistic = await getDocument('Statistic', statisticId);
+        sentimentData.statistic = docRefStatistic || [];
+      }
+
+      if (commentsId) {
+        const docRef = await getDocument('Comments', commentsId);
+        sentimentData.comments = docRef.filteredComments || [];
+      }
+
+      res.status(200).json({
+        status: 'success',
+        data: sentimentData,
+      });
+    } else {
+      res.status(404).json({
+        status: 'fail',
+        message: 'Sentiment data not found!',
+      });
+    }
+  } catch (e) {
+    return res.status(400).json({
+      status: 'fail',
+      message: `Error: ${e.message}`,
+    });
+  }
+};
+
+const showSentimentLimitHandler = async (req, res) => {
+  const { limit } = req.params;
+  const user = req.user;
+
+  try {
+    // Pastikan nilai `limit` berupa angka
+    const parsedLimit = parseInt(limit, 10);
+    if (isNaN(parsedLimit) || parsedLimit <= 0) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Invalid limit parameter',
+      });
+    }
+
+    // Query dengan memasukkan `LIMIT` secara langsung
+    const query = 'SELECT * FROM tb_sentiments WHERE user_id = ? LIMIT ?';
+    const [rows] = await pool.query(query, [user.id, parsedLimit]);
+
+    if (rows.length > 0) {
+      return res.status(200).json({
+        status: 'success',
+        limit: limit,
+        data: rows,
+      });
+    }
+
+    // Jika tidak ada data ditemukan
+    return res.status(404).json({
+      status: 'fail',
+      message: 'No data found',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'fail',
+      message: `Error: ${error.message}`,
     });
   }
 };
@@ -172,13 +288,13 @@ const showSentimentsWithPaginationHandler = async (req, res) => {
 
       res.status(200).json({
         status: 'success',
-        data: sentimentData,
         pagination: {
           currentPage: parseInt(page),
           dataPerPage: parseInt(limit),
           totalData,
           totalPages,
         },
+        data: sentimentData,
       });
     } else {
       res.status(404).json({
@@ -369,7 +485,10 @@ const createSentimentHandler = async (req, res) => {
 
     // db config section
     const formattedLinks = Array.isArray(link) ? link.join(', ') : link;
-    const formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const formattedDate = new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
     const user = req.user;
 
     let query;
@@ -424,7 +543,6 @@ const createSentimentHandler = async (req, res) => {
     });
   }
 };
-
 
 /**
  * Handles /sentiment/:id endpoint for deleting sentiment data
@@ -483,10 +601,12 @@ const sentimentHandler = {
   showAllSentimentHandler,
   showSentimentHandler,
   createSentimentHandler,
+  showSentimentDetailsHandler,
   showSentimentCommentsHandler,
   showSentimentsWithPaginationHandler,
   deleteSentimentHandler,
   showSentimentStatisticHandler,
+  showSentimentLimitHandler,
 };
 
 export default sentimentHandler;
