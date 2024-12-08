@@ -42,7 +42,7 @@ ENV DB_PASS=_kominfo:admin1234_
 # ENV FIREBASE_APP_ID=1:271529879590:web:86ba53c3e87754cf6b5ee7
 # ENV FIREBASE_MEASUREMENT_ID=G-J1BGE468PZ
 
-ENV FIRESTORE_CREDENTIALS=./credentials/serviceCredentials.json;
+# ENV FIRESTORE_CREDENTIALS=./credentials/serviceCredentials.json;
 
 ENV ML_FASTAPI=https://perceivo-fastapi-ml-132823030367.asia-southeast2.run.app/predict
 
