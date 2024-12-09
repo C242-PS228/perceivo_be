@@ -19,7 +19,8 @@ ENV JWT_TOKEN=S3N71VU3001
 ENV JWT_EXPIRES_IN=1d
 
 # APIFY
-ENV APIFY_API_KEY=apify_api_l2kcKwd666TfUk50H5r16tCoIGuTZd0iuWax
+# ENV APIFY_API_KEY=apify_api_l2kcKwd666TfUk50H5r16tCoIGuTZd0iuWax
+APIFY_API_KEY=apify_api_pdwdaej5VzJ5fq4iNi75pYvEge1uGR3Y3wPE
 
 # Database
 # ENV DB_HOST=sql12.freesqldatabase.com
