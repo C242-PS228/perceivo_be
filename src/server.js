@@ -8,11 +8,15 @@ dotenv.config();
 
 const app = express();
 
-app.listen(process.env.APP_PORT, "localhost", () => {
-  console.log(
-    `Server running at http://localhost:${process.env.APP_PORT}/${process.env.APP_VERSION}`
-  );
-});
+app.listen(
+  process.env.APP_PORT || 8080,
+  process.env.APP_HOST || "0.0.0.0",
+  () => {
+    console.log(
+      `Server running at http://${process.env.APP_HOST}:${process.env.APP_PORT}/${process.env.APP_VERSION}`
+    );
+  }
+);
 
 app.use(
   cors({

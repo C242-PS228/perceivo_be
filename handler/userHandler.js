@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../config/dbConfig.js';
 import { nanoid } from 'nanoid';
-const date = new Date();
+import formattedDate from '../config/timezoneConfig.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -115,7 +115,7 @@ const registerHandler = async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hashSync(password, 10);
-    const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
+    // const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
 
     const query =
       'INSERT INTO tb_users (unique_id, name, username, email, password, address, created_at) value (?, ?, ?, ?, ?, ?, ?)';
@@ -126,7 +126,7 @@ const registerHandler = async (req, res) => {
       email,
       hashedPassword,
       address,
-      formattedDate,
+      formattedDate(),
     ]);
 
     res.status(200).json({
