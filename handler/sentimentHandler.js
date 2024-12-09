@@ -1,19 +1,19 @@
 /* eslint-disable camelcase */
-import platform from '../config/platformConfig.js';
-import inputConfig from '../config/platformParamConfig.js';
-import filteredComment from '../src/structure/sentimentFilteredComments.js';
-import pool from '../config/dbConfig.js';
-import { PredictTrigger } from './event/sentimentPredictTrigger.js';
-import formattedDate from '../config/timezoneConfig.js';
+import platform from "../config/platformConfig.js";
+import inputConfig from "../config/platformParamConfig.js";
+import filteredComment from "../src/structure/sentimentFilteredComments.js";
+import pool from "../config/dbConfig.js";
+import { PredictTrigger } from "./event/sentimentPredictTrigger.js";
+import formattedDate from "../config/timezoneConfig.js";
 import {
   addDocument,
   getDocument,
   deleteDocument,
-} from './service/firestoreOperations.js';
-import apifyConnect from '../config/apifyConfig.js';
-import { nanoid } from 'nanoid';
+} from "./service/firestoreOperations.js";
+import apifyConnect from "../config/apifyConfig.js";
+import { nanoid } from "nanoid";
 
-import tagsTrigger from './event/addTagsTrigger.js';
+import tagsTrigger from "./event/addTagsTrigger.js";
 
 /**
  * Handles /sentiment endpoint
@@ -27,11 +27,11 @@ import tagsTrigger from './event/addTagsTrigger.js';
  */
 const showAllSentimentHandler = async (req, res) => {
   const user = req.user;
-  const query = 'SELECT * FROM tb_sentiments WHERE user_id = ?';
+  const query = "SELECT * FROM tb_sentiments WHERE user_id = ?";
   const [rows] = await pool.query(query, [user.id]);
 
   res.status(200).json({
-    status: 'success',
+    status: "success",
     data: rows,
   });
 };
@@ -63,6 +63,7 @@ const showSentimentHandler = async (req, res) => {
         s.sentiment_link,
         s.created_at AS sentiment_created_at,
         s.comments_id,
+        s.comments_limit,
         s.statistic_id
       FROM 
         tb_sentiments s
@@ -90,22 +91,23 @@ const showSentimentHandler = async (req, res) => {
         sentiment_created_at: rows[0].sentiment_created_at,
         sentiment_statistic_id: rows[0].statistic_id,
         comments_id: rows[0].comments_id,
+        comments_limit: rows[0].comments_limit,
         tags,
       };
 
       res.status(200).json({
-        status: 'success',
+        status: "success",
         data: sentimentData,
       });
     } else {
       res.status(404).json({
-        status: 'fail',
-        message: 'Sentiment data not found!',
+        status: "fail",
+        message: "Sentiment data not found!",
       });
     }
   } catch (e) {
     return res.status(400).json({
-      status: 'fail',
+      status: "fail",
       message: `Error: ${e.message}`,
     });
   }
@@ -159,28 +161,28 @@ const showSentimentDetailsHandler = async (req, res) => {
       };
 
       if (statisticId) {
-        const docRefStatistic = await getDocument('Statistic', statisticId);
+        const docRefStatistic = await getDocument("Statistic", statisticId);
         sentimentData.statistic = docRefStatistic || [];
       }
 
       if (commentsId) {
-        const docRef = await getDocument('Comments', commentsId);
+        const docRef = await getDocument("Comments", commentsId);
         sentimentData.comments = docRef.filteredComments || [];
       }
 
       res.status(200).json({
-        status: 'success',
+        status: "success",
         data: sentimentData,
       });
     } else {
       res.status(404).json({
-        status: 'fail',
-        message: 'Sentiment data not found!',
+        status: "fail",
+        message: "Sentiment data not found!",
       });
     }
   } catch (e) {
     return res.status(400).json({
-      status: 'fail',
+      status: "fail",
       message: `Error: ${e.message}`,
     });
   }
@@ -195,18 +197,18 @@ const showSentimentLimitHandler = async (req, res) => {
     const parsedLimit = parseInt(limit, 10);
     if (isNaN(parsedLimit) || parsedLimit <= 0) {
       return res.status(400).json({
-        status: 'fail',
-        message: 'Invalid limit parameter',
+        status: "fail",
+        message: "Invalid limit parameter",
       });
     }
 
     // Query dengan memasukkan `LIMIT` secara langsung
-    const query = 'SELECT * FROM tb_sentiments WHERE user_id = ? LIMIT ?';
+    const query = "SELECT * FROM tb_sentiments WHERE user_id = ? LIMIT ?";
     const [rows] = await pool.query(query, [user.id, parsedLimit]);
 
     if (rows.length > 0) {
       return res.status(200).json({
-        status: 'success',
+        status: "success",
         limit: limit,
         data: rows,
       });
@@ -214,12 +216,12 @@ const showSentimentLimitHandler = async (req, res) => {
 
     // Jika tidak ada data ditemukan
     return res.status(404).json({
-      status: 'fail',
-      message: 'No data found',
+      status: "fail",
+      message: "No data found",
     });
   } catch (error) {
     return res.status(500).json({
-      status: 'fail',
+      status: "fail",
       message: `Error: ${error.message}`,
     });
   }
@@ -287,7 +289,7 @@ const showSentimentsWithPaginationHandler = async (req, res) => {
       }));
 
       res.status(200).json({
-        status: 'success',
+        status: "success",
         pagination: {
           currentPage: parseInt(page),
           dataPerPage: parseInt(limit),
@@ -298,13 +300,13 @@ const showSentimentsWithPaginationHandler = async (req, res) => {
       });
     } else {
       res.status(404).json({
-        status: 'fail',
-        message: 'No sentiment data found for the specified page!',
+        status: "fail",
+        message: "No sentiment data found for the specified page!",
       });
     }
   } catch (e) {
     return res.status(400).json({
-      status: 'fail',
+      status: "fail",
       message: `Error: ${e.message}`,
     });
   }
@@ -332,39 +334,39 @@ const showSentimentCommentsHandler = async (req, res) => {
   try {
     // Query ke database untuk mendapatkan komentar terkait
     const query =
-      'SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
+      "SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?";
     const [rows] = await pool.query(query, [user.id, id]);
     console.log(query);
 
     // Jika `comments_id` tidak ditemukan
     if (!rows.length || rows[0].comments_id === null) {
       return res.status(404).json({
-        status: 'fail',
-        message: 'Data not found!',
+        status: "fail",
+        message: "Data not found!",
       });
     }
 
     // Ambil dokumen dari Firestore berdasarkan ID
     const commentsId = rows[0].comments_id;
-    const docRef = await getDocument('Comments', commentsId);
+    const docRef = await getDocument("Comments", commentsId);
 
     // Jika dokumen ditemukan, kembalikan data
     if (docRef) {
       return res.status(200).json({
-        status: 'success',
+        status: "success",
         data: docRef.filteredComments || [], // Asumsikan data ada di `filteredComments`
       });
     }
 
     // Jika dokumen tidak ditemukan
     return res.status(404).json({
-      status: 'fail',
-      message: 'Data not found!',
+      status: "fail",
+      message: "Data not found!",
     });
   } catch (e) {
     // Tangani error
     return res.status(400).json({
-      status: 'fail',
+      status: "fail",
       message: `Error: ${e.message}`,
     });
   }
@@ -390,40 +392,40 @@ const showSentimentStatisticHandler = async (req, res) => {
 
   try {
     const query =
-      'SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
+      "SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?";
     const [rows] = await pool.query(query, [user.id, id]);
 
     if (rows[0].statistic_id === null) {
       return res.status(404).json({
-        status: 'fail',
-        message: 'data not found!',
+        status: "fail",
+        message: "data not found!",
       });
     }
 
     if (rows.length > 0) {
       const statisticId = rows[0].statistic_id;
-      const docRef = await getDocument('Statistic', statisticId);
+      const docRef = await getDocument("Statistic", statisticId);
 
       if (docRef) {
         res.status(200).json({
-          status: 'success',
+          status: "success",
           data: docRef || [],
         });
       } else {
         res.status(404).json({
-          status: 'fail',
-          message: 'data not found!',
+          status: "fail",
+          message: "data not found!",
         });
       }
     } else {
       res.status(404).json({
-        status: 'fail',
-        message: 'data not found!',
+        status: "fail",
+        message: "data not found!",
       });
     }
   } catch (e) {
     return res.status(400).json({
-      status: 'fail',
+      status: "fail",
       message: `error: ${e}`,
     });
   }
@@ -447,8 +449,8 @@ const createSentimentHandler = async (req, res) => {
 
   if (!req.body) {
     return res.status(400).json({
-      status: 'fail',
-      message: 'Request body is missing or invalid',
+      status: "fail",
+      message: "Request body is missing or invalid",
     });
   }
 
@@ -458,7 +460,7 @@ const createSentimentHandler = async (req, res) => {
 
     while (isDuplicate) {
       const [checkRows] = await pool.query(
-        'SELECT COUNT(*) as count FROM tb_sentiments WHERE unique_id = ?',
+        "SELECT COUNT(*) as count FROM tb_sentiments WHERE unique_id = ?",
         [uniqueId]
       );
       if (checkRows[0].count === 0) {
@@ -474,8 +476,8 @@ const createSentimentHandler = async (req, res) => {
 
     if (!describePlatform) {
       return res.status(400).json({
-        status: 'fail',
-        message: 'Invalid platform name',
+        status: "fail",
+        message: "Invalid platform name",
       });
     }
 
@@ -484,23 +486,23 @@ const createSentimentHandler = async (req, res) => {
 
     if (!comments) {
       return res.status(404).json({
-        status: 'fail',
-        message: 'Comments not found!',
+        status: "fail",
+        message: "Comments not found!",
       });
     }
 
     const filteredComments = filteredComment(describePlatform.name, comments);
 
-    const docRef = await addDocument('Comments', { filteredComments });
+    const docRef = await addDocument("Comments", { filteredComments });
     const statistic_id = await PredictTrigger(filteredComments);
 
-    const formattedLinks = Array.isArray(link) ? link.join(', ') : link;
+    const formattedLinks = Array.isArray(link) ? link.join(", ") : link;
 
     let query;
     let rows;
     if (title) {
       query =
-        'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, comments_limit, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        "INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, comments_limit, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
       [rows] = await pool.query(query, [
         uniqueId,
         title,
@@ -514,7 +516,7 @@ const createSentimentHandler = async (req, res) => {
       ]);
     } else {
       query =
-        'INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        "INSERT INTO tb_sentiments (unique_id, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
       [rows] = await pool.query(query, [
         uniqueId,
         user.id,
@@ -532,8 +534,8 @@ const createSentimentHandler = async (req, res) => {
     }
 
     res.status(200).json({
-      status: 'success',
-      message: 'Success add analyst',
+      status: "success",
+      message: "Success add analyst",
       title: title,
       tags: tags,
       sentiment_id: uniqueId,
@@ -546,12 +548,11 @@ const createSentimentHandler = async (req, res) => {
     });
   } catch (e) {
     res.status(500).json({
-      status: 'fail',
+      status: "fail",
       message: `Error: ${e.message}`,
     });
   }
 };
-
 
 /**
  * Handles /sentiment/:id endpoint for deleting sentiment data
@@ -573,34 +574,34 @@ const deleteSentimentHandler = async (req, res) => {
 
   try {
     const query =
-      'SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
+      "SELECT * FROM tb_sentiments WHERE user_id = ? AND unique_id = ?";
     const [rows] = await pool.query(query, [user.id, id]);
 
     if (rows.length > 0) {
       if (rows[0].comments_id) {
-        await deleteDocument('Comments', rows[0].comments_id);
+        await deleteDocument("Comments", rows[0].comments_id);
       }
 
       if (rows[0].statistic_id) {
-        await deleteDocument('Statistic', rows[0].statistic_id);
+        await deleteDocument("Statistic", rows[0].statistic_id);
       }
 
       const query =
-        'DELETE FROM tb_sentiments WHERE user_id = ? AND unique_id = ?';
+        "DELETE FROM tb_sentiments WHERE user_id = ? AND unique_id = ?";
       await pool.query(query, [user.id, id]);
       res.status(200).json({
-        status: 'success',
-        message: 'success delete sentiment',
+        status: "success",
+        message: "success delete sentiment",
       });
     } else {
       res.status(404).json({
-        status: 'fail',
-        message: 'data not found!',
+        status: "fail",
+        message: "data not found!",
       });
     }
   } catch (error) {
     res.status(500).json({
-      status: 'fail',
+      status: "fail",
       message: `error: ${error}`,
     });
   }
