@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import pool from '../config/dbConfig.js';
 import { nanoid } from 'nanoid';
-const date = new Date();
+// const date = new Date();
+import formattedDate from '../config/timezoneConfig.js';
 
 /**
  * Handles /tags endpoint
@@ -53,6 +54,7 @@ const showTagHandler = async (req, res) => {
         t.id AS tag_id,
         t.tag_name,
         t.created_at AS tag_created_at,
+        s.title,
         s.id AS sentiment_id,
         s.unique_id AS sentiment_unique_id,
         s.platform,
@@ -119,15 +121,13 @@ const createTagHandler = async (req, res) => {
       }
     }
 
-    const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
-
     const query =
       'INSERT INTO tb_tags (unique_id, user_id, tag_name, created_at) VALUES (?, ?, ?, ?)';
     const [rows] = await pool.query(query, [
       uniqueId,
       req.user.id,
       data.tag_name,
-      formattedDate,
+      formattedDate(),
     ]);
 
     if (rows.affectedRows > 0) {
@@ -135,6 +135,7 @@ const createTagHandler = async (req, res) => {
         status: 'success',
         unique_id: uniqueId,
         tag_name: data.tag_name,
+        created_at: formattedDate(),
         message: `success add tag ${data.tag_name}`,
       });
     } else {

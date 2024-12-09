@@ -4,7 +4,7 @@ import inputConfig from '../config/platformParamConfig.js';
 import filteredComment from '../src/structure/sentimentFilteredComments.js';
 import pool from '../config/dbConfig.js';
 import { PredictTrigger } from './event/sentimentPredictTrigger.js';
-const date = new Date();
+import formattedDate from '../config/timezoneConfig.js';
 import {
   addDocument,
   getDocument,
@@ -443,6 +443,7 @@ const showSentimentStatisticHandler = async (req, res) => {
  */
 const createSentimentHandler = async (req, res) => {
   const { title, link, platformName, resultLimit, tags } = req.body || {};
+  const user = req.user;
 
   if (!req.body) {
     return res.status(400).json({
@@ -494,11 +495,6 @@ const createSentimentHandler = async (req, res) => {
     const statistic_id = await PredictTrigger(filteredComments);
 
     const formattedLinks = Array.isArray(link) ? link.join(', ') : link;
-    const formattedDate = new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace('T', ' ');
-    const user = req.user;
 
     let query;
     let rows;
@@ -513,7 +509,7 @@ const createSentimentHandler = async (req, res) => {
         formattedLinks,
         docRef,
         statistic_id,
-        formattedDate,
+        formattedDate(),
       ]);
     } else {
       query =
@@ -525,7 +521,7 @@ const createSentimentHandler = async (req, res) => {
         formattedLinks,
         docRef,
         statistic_id,
-        formattedDate,
+        formattedDate(),
       ]);
     }
 
@@ -538,11 +534,12 @@ const createSentimentHandler = async (req, res) => {
       message: 'Success add analyst',
       title: title,
       tags: tags,
-      sentimentId: uniqueId,
-      commentsId: docRef.id,
+      sentiment_id: uniqueId,
+      comments_id: docRef.id,
       statistic_id: statistic_id,
       links: formattedLinks,
       platform: describePlatform.name,
+      created_at: formattedDate(),
     });
   } catch (e) {
     res.status(500).json({
