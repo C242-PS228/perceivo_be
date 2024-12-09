@@ -500,7 +500,7 @@ const createSentimentHandler = async (req, res) => {
     let rows;
     if (title) {
       query =
-        'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, comments_limit, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
       [rows] = await pool.query(query, [
         uniqueId,
         title,
@@ -508,6 +508,7 @@ const createSentimentHandler = async (req, res) => {
         describePlatform.name,
         formattedLinks,
         docRef,
+        comments.length,
         statistic_id,
         formattedDate(),
       ]);
@@ -520,6 +521,7 @@ const createSentimentHandler = async (req, res) => {
         describePlatform.name,
         formattedLinks,
         docRef,
+        comments.length,
         statistic_id,
         formattedDate(),
       ]);
@@ -536,6 +538,7 @@ const createSentimentHandler = async (req, res) => {
       tags: tags,
       sentiment_id: uniqueId,
       comments_id: docRef.id,
+      comments_limit: comments.length,
       statistic_id: statistic_id,
       links: formattedLinks,
       platform: describePlatform.name,
