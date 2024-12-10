@@ -93,8 +93,6 @@ route.put(
 );
 route.delete("/tags/:unique_id", jwtAuthToken, tagsHandler.deleteTagHandler);
 
-route.get("/stats", jwtAuthToken, sentimentHandler.showStats);
-
 // ensure this route always last
 route.all("*", userHandler.missingUrlHandler);
 

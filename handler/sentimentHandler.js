@@ -597,66 +597,6 @@ const deleteSentimentHandler = async (req, res) => {
   }
 };
 
-const showStats = async (req, res) => {
-  const user = req.user;
-
-  try {
-    const query = 'SELECT * FROM tb_sentiments WHERE user_id = ?';
-    const [rows] = await pool.query(query, [user.id]);
-    console.log(rows);
-
-    // Ambil data dari getDocument, abaikan jika ada error atau null
-    const statistics = await Promise.all(
-      rows
-        .filter((statistic) => statistic.statistic_id) // Hanya proses ID yang valid
-        .map(async (statistic) => {
-          try {
-            const result = await getDocument('Statistic', statistic.statistic_id);
-            return result.data; // Kembalikan data jika berhasil
-          } catch (error) {
-            console.warn(`Document not found for ID ${statistic.statistic_id}:`, error.message);
-            return null; // Abaikan data yang tidak ditemukan
-          }
-        })
-    );
-
-    // Filter untuk menghapus nilai null dari hasil Promise.all
-    const filteredStatistics = statistics.filter((stat) => stat !== null);
-
-    console.log(filteredStatistics);
-
-    // Hitung total hanya dari data valid
-    const totalStatistics = filteredStatistics.reduce(
-      (totals, current) => {
-        totals.positive += current.positive || 0;
-        totals.negative += current.negative || 0;
-        totals.neutral += current.neutral || 0;
-        return totals;
-      },
-      { positive: 0, negative: 0, neutral: 0 }
-    );
-
-    console.log(totalStatistics);
-
-    const databody = {
-      all_sentiment_count: rows.length,
-      all_sentiment_data: rows,
-      statistics: totalStatistics,
-    };
-
-    res.status(200).json({
-      status: 'success',
-      data: databody,
-    });
-  } catch (error) {
-    console.error('Error in showStats:', error.message);
-    res.status(404).json({
-      status: 'fail',
-      message: error.message,
-    });
-  }
-};
-
 
 const sentimentHandler = {
   showAllSentimentHandler,
@@ -668,7 +608,6 @@ const sentimentHandler = {
   deleteSentimentHandler,
   showSentimentStatisticHandler,
   showSentimentLimitHandler,
-  showStats,
 };
 
 export default sentimentHandler;
