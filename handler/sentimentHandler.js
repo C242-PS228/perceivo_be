@@ -604,15 +604,13 @@ const showStats = async (req, res) => {
     const query = "SELECT * FROM tb_sentiments WHERE user_id = ?";
     const [rows] = await pool.query(query, [user.id]);
 
-    // Menggunakan Promise.all untuk menunggu semua getDocument selesai
     const statistics = await Promise.all(
       rows.map(async (statistic) => {
         const result = await getDocument("Statistic", statistic.statistic_id);
-        return result.data; // Mengambil data statistik saja
+        return result.data;
       })
     );
 
-    // Menghitung total untuk positive, negative, dan neutral
     const totalStatistics = statistics.reduce(
       (totals, current) => {
         totals.positive += current.positive || 0;
@@ -620,14 +618,13 @@ const showStats = async (req, res) => {
         totals.neutral += current.neutral || 0;
         return totals;
       },
-      { positive: 0, negative: 0, neutral: 0 } // Nilai awal
+      { positive: 0, negative: 0, neutral: 0 }
     );
 
-    // Menyusun response body
     const databody = {
       all_sentiment_count: rows.length,
       all_sentiment_data: rows,
-      statistics: totalStatistics, // Hanya total yang dikembalikan
+      statistics: totalStatistics,
     };
 
     res.status(200).json({
