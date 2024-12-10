@@ -1,17 +1,5 @@
 import pool from '../config/dbConfig.js';
-import { initializeApp } from 'firebase/app';
-import firebaseConfig from '../config/firebaseConfig.js'; // Sesuaikan dengan konfigurasi Firebase Anda
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import {
-  addDocument,
-  getDocument,
-  deleteDocument,
-} from './service/firestoreOperations.js';
-
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
-
+import { getDocument } from './service/firestoreOperations.js';
 /**
  * Handles /dashboard endpoint
  * @function
@@ -48,7 +36,6 @@ const dashboardHandler = async (req, res) => {
         s.platform,
         s.sentiment_link,
         s.created_at AS sentiment_created_at,
-        s.comments_id,
         s.statistic_id, 
         GROUP_CONCAT(t.tag_name) AS tags
       FROM 
@@ -78,24 +65,10 @@ const dashboardHandler = async (req, res) => {
     let totalNegative = 0;
     let totalNeutral = 0;
 
-    // Fetch comments and statistics data from Firestore
-    const sentimentsWithComments = await Promise.all(
+    // Fetch statistics data from Firestore
+    const sentimentsWithStatistics = await Promise.all(
       sentimentRows.map(async (sentiment) => {
         const sentimentData = { ...sentiment };
-
-        // Fetch comments from Firestore
-        if (sentiment.comments_id) {
-          try {
-            const docRef = await getDocument('Comments', sentiment.comments_id);
-            sentimentData.comments = docRef?.filteredComments || [];
-          } catch (error) {
-            sentimentData.comments = [];
-            console.error(
-              `Error fetching comments for sentiment ID ${sentiment.id}:`,
-              error.message
-            );
-          }
-        }
 
         // Fetch statistics data from Firestore using statistic_id
         if (sentiment.statistic_id) {
@@ -139,8 +112,38 @@ const dashboardHandler = async (req, res) => {
           sentimentData.sentimentDetails = {}; // Default to empty object if no sentiment ID
         }
 
-        return sentimentData;
+        // Filtered out sentimentDetails from the response
+        return {
+          sentiment_id: sentimentData.sentiment_id,
+          sentiment_unique_id: sentimentData.sentiment_unique_id,
+          platform: sentimentData.platform,
+          sentiment_link: sentimentData.sentiment_link,
+          sentiment_created_at: sentimentData.sentiment_created_at,
+          statistic_id: sentimentData.statistic_id,
+          tags: sentimentData.tags,
+          statistic: sentimentData.statistic
+        };
       })
+    );
+    const query = 'SELECT * FROM tb_sentiments WHERE user_id = ?';
+    const [rows] = await pool.query(query, [user.id]);
+
+
+    const statistics = await Promise.all(
+      rows.map(async (statistic) => {
+        const result = await getDocument('Statistic', statistic.statistic_id);
+        return result.data;
+      })
+    );
+
+    const totalStatistics = statistics.reduce(
+      (totals, current) => {
+        totals.positive += current.positive || 0;
+        totals.negative += current.negative || 0;
+        totals.neutral += current.neutral || 0;
+        return totals;
+      },
+      { positive: 0, negative: 0, neutral: 0 }
     );
 
     // Send the response including total sentiment statistics
@@ -149,12 +152,8 @@ const dashboardHandler = async (req, res) => {
       data: {
         user: userData,
         sentimentCount,
-        sentiments: sentimentsWithComments,
-        totalSentimentStatistics: {
-          positive: totalPositive,
-          negative: totalNegative,
-          neutral: totalNeutral,
-        },
+        sentiments: sentimentsWithStatistics,
+        totalSentimentStatistics: totalStatistics,
       },
     });
   } catch (error) {
@@ -165,6 +164,5 @@ const dashboardHandler = async (req, res) => {
     });
   }
 };
-
 
 export default dashboardHandler;
