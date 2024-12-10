@@ -6,7 +6,7 @@ import { getDocument } from './service/firestoreOperations.js';
  * @function
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with user and sentiment data, including sentiment count
+ * @returns {Object} JSON response with user and sentiment data, including sentiment count and total comments limit
  */
 const dashboardHandler = async (req, res) => {
   const user = req.user;
@@ -25,7 +25,6 @@ const dashboardHandler = async (req, res) => {
 
     const userData = userRows[0];
 
-    // Query sentiment data and count
     const sentimentQuery = `
       SELECT 
         s.id AS sentiment_id,
@@ -53,6 +52,14 @@ const dashboardHandler = async (req, res) => {
       'SELECT COUNT(*) AS sentiment_count FROM tb_sentiments WHERE user_id = ?';
     const [sentimentCountRows] = await pool.query(sentimentCountQuery, [user.id]);
     const sentimentCount = sentimentCountRows[0].sentiment_count;
+
+    const totalCommentsLimitQuery = `
+      SELECT SUM(comments_limit) AS total_comments_limit 
+      FROM tb_sentiments 
+      WHERE user_id = ?;
+    `;
+    const [totalCommentsLimitRows] = await pool.query(totalCommentsLimitQuery, [user.id]);
+    const totalCommentsLimit = totalCommentsLimitRows[0].total_comments_limit || 0;
 
     let totalPositive = 0;
     let totalNegative = 0;
@@ -94,7 +101,7 @@ const dashboardHandler = async (req, res) => {
       })
     );
 
-    // Filter out any null or invalid statistics
+
     const validSentiments = sentimentsWithStatistics.filter((sentiment) => sentiment);
 
     const statistics = await Promise.all(
@@ -126,6 +133,7 @@ const dashboardHandler = async (req, res) => {
       data: {
         user: userData,
         sentimentCount,
+        totalCommentsLimit, 
         sentiments: validSentiments,
         totalSentimentStatistics: totalStatistics,
       },
