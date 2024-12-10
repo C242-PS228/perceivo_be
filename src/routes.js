@@ -15,7 +15,7 @@ route.post('/login', validation.loginInputValidation, userHandler.loginHandler);
 
 route.post('/register', validation.registerInputValidation, validation.passwordValidation, userHandler.registerHandler);
 
-route.get('/dashboard', dashboardHandler);
+route.get('/dashboard', jwtAuthToken, dashboardHandler);
 
 // Auth Section Route
 route.get('/profile', jwtAuthToken, userHandler.profileHandler);
@@ -39,6 +39,7 @@ route.get('/tags/:unique_id', jwtAuthToken, tagsHandler.showTagHandler);
 route.post('/tags', jwtAuthToken, validation.tagNameValidation, tagsHandler.createTagHandler);
 route.put('/tags/:unique_id', jwtAuthToken, validation.tagNameValidation, tagsHandler.updateTagHandler);
 route.delete('/tags/:unique_id', jwtAuthToken, tagsHandler.deleteTagHandler);
+
 
 // ensure this route always last
 route.all('*', userHandler.missingUrlHandler);
