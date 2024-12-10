@@ -26,7 +26,6 @@ The **Dashboard API** provides data for a logged-in user's dashboard, including 
 
   - **Content-Type**: `application/json`
   - **Body Example**:
-    Berikut adalah respons yang telah disesuaikan: semua tipe data berbasis angka menggunakan `int`, sedangkan teks tetap menggunakan `string`:
 
     ```json
     {
