@@ -608,7 +608,6 @@ const sentimentHandler = {
   deleteSentimentHandler,
   showSentimentStatisticHandler,
   showSentimentLimitHandler,
-  showStats,
 };
 
 export default sentimentHandler;
