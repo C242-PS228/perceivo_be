@@ -133,5 +133,3 @@ The **Dashboard API** provides data for a logged-in user's dashboard, including 
 - Users must be authenticated to access this endpoint. Provide a valid authorization token in the request header if required.
 
 ---
-
-Let me know if you need additional adjustments!
