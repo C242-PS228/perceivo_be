@@ -1,21 +1,12 @@
 import pool from '../config/dbConfig.js';
 import { initializeApp } from 'firebase/app';
-import firebaseConfig from '../config/firebaseConfig.js';  // Sesuaikan dengan konfigurasi Firebase Anda
+import firebaseConfig from '../config/firebaseConfig.js'; // Sesuaikan dengan konfigurasi Firebase Anda
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-// import platform from '../config/platformConfig.js';
-// import inputConfig from '../config/platformParamConfig.js';
-// import filteredComment from '../src/structure/sentimentFilteredComments.js';
-// import { PredictTrigger } from './event/sentimentPredictTrigger.js';
-// import formattedDate from '../config/timezoneConfig.js';
-// import {
-//   addDocument,
-//   getDocument,
-//   deleteDocument,
-// } from './service/firestoreOperations.js';
-// import apifyConnect from '../config/apifyConfig.js';
-// import { nanoid } from 'nanoid';
-
-// import tagsTrigger from './event/addTagsTrigger.js';
+import {
+  addDocument,
+  getDocument,
+  deleteDocument,
+} from './service/firestoreOperations.js';
 
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
@@ -36,7 +27,8 @@ const dashboardHandler = async (req, res) => {
 
   try {
     // Query user data
-    const userQuery = 'SELECT id, username, email, created_at FROM tb_users WHERE id = ?';
+    const userQuery =
+      'SELECT id, username, email, created_at FROM tb_users WHERE id = ?';
     const [userRows] = await pool.query(userQuery, [user.id]);
 
     if (userRows.length === 0) {
@@ -74,99 +66,105 @@ const dashboardHandler = async (req, res) => {
     const [sentimentRows] = await pool.query(sentimentQuery, [user.id]);
 
     // Get sentiment count
-    const sentimentCountQuery = 'SELECT COUNT(*) AS sentiment_count FROM tb_sentiments WHERE user_id = ?';
-    const [sentimentCountRows] = await pool.query(sentimentCountQuery, [user.id]);
+    const sentimentCountQuery =
+      'SELECT COUNT(*) AS sentiment_count FROM tb_sentiments WHERE user_id = ?';
+    const [sentimentCountRows] = await pool.query(sentimentCountQuery, [
+      user.id,
+    ]);
     const sentimentCount = sentimentCountRows[0].sentiment_count;
 
-    // Fetch comments data from Firestore
+    // Initialize counters for sentiment statistics
+    let totalPositive = 0;
+    let totalNegative = 0;
+    let totalNeutral = 0;
+
+    // Fetch comments and statistics data from Firestore
     const sentimentsWithComments = await Promise.all(
       sentimentRows.map(async (sentiment) => {
         const sentimentData = { ...sentiment };
 
+        // Fetch comments from Firestore
         if (sentiment.comments_id) {
           try {
-            const docRef = doc(db, 'Comments', sentiment.comments_id);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-              sentimentData.comments = docSnap.data().filteredComments || [];
-            } else {
-              sentimentData.comments = [];
-            }
+            const docRef = await getDocument('Comments', sentiment.comments_id);
+            sentimentData.comments = docRef?.filteredComments || [];
           } catch (error) {
-            sentimentData.comments = []; // Handle error gracefully if Firestore fetch fails
-            console.error(`Error fetching comments for sentiment ID ${sentiment.id}:`, error.message);
+            sentimentData.comments = [];
+            console.error(
+              `Error fetching comments for sentiment ID ${sentiment.id}:`,
+              error.message
+            );
           }
         }
 
-        // Fetch sentiment statistics if statistic_id exists
+        // Fetch statistics data from Firestore using statistic_id
         if (sentiment.statistic_id) {
           try {
-            const docRef = doc(db, 'Predict', sentiment.statistic_id);
-            const docSnap = await getDoc(docRef);
+            const docRef = await getDocument('Statistic', sentiment.statistic_id);
+            sentimentData.statistic = docRef || {
+              positive: 0,
+              negative: 0,
+              neutral: 0,
+            }; // Default if not found
 
-            if (docSnap.exists()) {
-              sentimentData.statistic = docSnap.data();
-            } else {
-              sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 }; // Default if not found
-            }
+            // Aggregate statistics
+            totalPositive += sentimentData.statistic.positive;
+            totalNegative += sentimentData.statistic.negative;
+            totalNeutral += sentimentData.statistic.neutral;
+
           } catch (error) {
-            sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 }; // Handle error gracefully
-            console.error(`Error fetching statistics for sentiment ID ${sentiment.id}:`, error.message);
+            sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 };
+            console.error(
+              `Error fetching statistics for sentiment ID ${sentiment.id}:`,
+              error.message
+            );
           }
         } else {
-          sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 }; // Default if no statistic_id
+          sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 };
         }
 
-        // Count the positive, negative, and neutral comments
-        let positiveCount = 0;
-        let negativeCount = 0;
-        let neutralCount = 0;
-
-        if (sentimentData.comments.length > 0) {
-          sentimentData.comments.forEach((comment) => {
-            // Log the sentiment to understand the issue
-            console.log('Comment Sentiment:', comment.sentiment);
-
-            if (comment.sentiment === 'positive') {
-              positiveCount++;
-            } else if (comment.sentiment === 'negative') {
-              negativeCount++;
-            } else if (comment.sentiment === 'neutral') {
-              neutralCount++;
-            } else {
-              // Log unexpected sentiment values
-              console.warn(`Unknown sentiment value: ${comment.sentiment}`);
-            }
-          });
+        // Fetch sentiment data from Firestore using sentiment_id
+        if (sentiment.id) {
+          try {
+            const sentimentDocRef = await getDocument('Sentiments', sentiment.id);
+            sentimentData.sentimentDetails = sentimentDocRef || {}; // Default to empty object if not found
+          } catch (error) {
+            sentimentData.sentimentDetails = {}; // Default to empty object if there's an error
+            console.error(
+              `Error fetching sentiment details for sentiment ID ${sentiment.id}:`,
+              error.message
+            );
+          }
+        } else {
+          sentimentData.sentimentDetails = {}; // Default to empty object if no sentiment ID
         }
-
-        // Add the sentiment counts to the sentiment data
-        sentimentData.commentSentimentCounts = {
-          positive: positiveCount || 0, // Ensure count defaults to 0 if no positive comments
-          negative: negativeCount || 0, // Same for negative and neutral
-          neutral: neutralCount || 0,
-        };
 
         return sentimentData;
       })
     );
 
+    // Send the response including total sentiment statistics
     res.status(200).json({
       status: 'success',
       data: {
         user: userData,
-        sentimentCount, // Include the sentiment count in the response
+        sentimentCount,
         sentiments: sentimentsWithComments,
+        totalSentimentStatistics: {
+          positive: totalPositive,
+          negative: totalNegative,
+          neutral: totalNeutral,
+        },
       },
     });
   } catch (error) {
-    console.error('Error in dashboard handler:', error.message); // Log error for debugging
+    console.error('Error in dashboard handler:', error.message);
     res.status(500).json({
       status: 'fail',
       message: `Error: ${error.message}`,
     });
   }
 };
+
 
 export default dashboardHandler;
