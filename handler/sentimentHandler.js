@@ -506,7 +506,7 @@ const createSentimentHandler = async (req, res) => {
     const formattedLinks = Array.isArray(link) ? link.join(', ') : link;
 
     const query =
-        'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, comments_limit, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+      'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, comments_limit, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const [rows] = await pool.query(query, [
       uniqueId,
       title || null,
@@ -596,6 +596,7 @@ const deleteSentimentHandler = async (req, res) => {
     });
   }
 };
+
 
 const sentimentHandler = {
   showAllSentimentHandler,
