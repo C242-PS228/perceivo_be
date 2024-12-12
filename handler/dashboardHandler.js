@@ -1,42 +1,19 @@
 import pool from '../config/dbConfig.js';
-import { initializeApp } from 'firebase/app';
-import firebaseConfig from '../config/firebaseConfig.js';  // Sesuaikan dengan konfigurasi Firebase Anda
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
-// import platform from '../config/platformConfig.js';
-// import inputConfig from '../config/platformParamConfig.js';
-// import filteredComment from '../src/structure/sentimentFilteredComments.js';
-// import { PredictTrigger } from './event/sentimentPredictTrigger.js';
-// import formattedDate from '../config/timezoneConfig.js';
-// import {
-//   addDocument,
-//   getDocument,
-//   deleteDocument,
-// } from './service/firestoreOperations.js';
-// import apifyConnect from '../config/apifyConfig.js';
-// import { nanoid } from 'nanoid';
-
-// import tagsTrigger from './event/addTagsTrigger.js';
-
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+import { getDocument } from './service/firestoreOperations.js';
 
 /**
  * Handles /dashboard endpoint
  * @function
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with user and sentiment data, including sentiment count
- * @description
- * This endpoint retrieves user data, all sentiment data, and includes the sentiment count
- * and associated tags, as well as filtered comments if available.
+ * @returns {Object} JSON response with user and sentiment data, including sentiment count and total comments limit
  */
 const dashboardHandler = async (req, res) => {
   const user = req.user;
 
   try {
-    // Query user data
-    const userQuery = 'SELECT id, username, email, created_at FROM tb_users WHERE id = ?';
+    const userQuery =
+      'SELECT id, username, email, created_at FROM tb_users WHERE id = ?';
     const [userRows] = await pool.query(userQuery, [user.id]);
 
     if (userRows.length === 0) {
@@ -48,7 +25,6 @@ const dashboardHandler = async (req, res) => {
 
     const userData = userRows[0];
 
-    // Query sentiment data and count
     const sentimentQuery = `
       SELECT 
         s.id AS sentiment_id,
@@ -56,7 +32,6 @@ const dashboardHandler = async (req, res) => {
         s.platform,
         s.sentiment_link,
         s.created_at AS sentiment_created_at,
-        s.comments_id,
         s.statistic_id, 
         GROUP_CONCAT(t.tag_name) AS tags
       FROM 
@@ -73,95 +48,97 @@ const dashboardHandler = async (req, res) => {
 
     const [sentimentRows] = await pool.query(sentimentQuery, [user.id]);
 
-    // Get sentiment count
-    const sentimentCountQuery = 'SELECT COUNT(*) AS sentiment_count FROM tb_sentiments WHERE user_id = ?';
+    const sentimentCountQuery =
+      'SELECT COUNT(*) AS sentiment_count FROM tb_sentiments WHERE user_id = ?';
     const [sentimentCountRows] = await pool.query(sentimentCountQuery, [user.id]);
     const sentimentCount = sentimentCountRows[0].sentiment_count;
 
-    // Fetch comments data from Firestore
-    const sentimentsWithComments = await Promise.all(
+    const totalCommentsLimitQuery = `
+      SELECT SUM(comments_limit) AS total_comments_limit 
+      FROM tb_sentiments 
+      WHERE user_id = ?;
+    `;
+    const [totalCommentsLimitRows] = await pool.query(totalCommentsLimitQuery, [user.id]);
+    const totalCommentsLimit = totalCommentsLimitRows[0].total_comments_limit || 0;
+
+    let totalPositive = 0;
+    let totalNegative = 0;
+    let totalNeutral = 0;
+
+    const sentimentsWithStatistics = await Promise.all(
       sentimentRows.map(async (sentiment) => {
         const sentimentData = { ...sentiment };
 
-        if (sentiment.comments_id) {
-          try {
-            const docRef = doc(db, 'Comments', sentiment.comments_id);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-              sentimentData.comments = docSnap.data().filteredComments || [];
-            } else {
-              sentimentData.comments = [];
-            }
-          } catch (error) {
-            sentimentData.comments = []; // Handle error gracefully if Firestore fetch fails
-            console.error(`Error fetching comments for sentiment ID ${sentiment.id}:`, error.message);
-          }
-        }
-
-        // Fetch sentiment statistics if statistic_id exists
         if (sentiment.statistic_id) {
           try {
-            const docRef = doc(db, 'Predict', sentiment.statistic_id);
-            const docSnap = await getDoc(docRef);
+            const docRef = await getDocument('Statistic', sentiment.statistic_id);
+            sentimentData.statistic = docRef || {
+              positive: 0,
+              negative: 0,
+              neutral: 0,
+            };
 
-            if (docSnap.exists()) {
-              sentimentData.statistic = docSnap.data();
-            } else {
-              sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 }; // Default if not found
-            }
+            totalPositive += sentimentData.statistic.positive || 0;
+            totalNegative += sentimentData.statistic.negative || 0;
+            totalNeutral += sentimentData.statistic.neutral || 0;
           } catch (error) {
-            sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 }; // Handle error gracefully
-            console.error(`Error fetching statistics for sentiment ID ${sentiment.id}:`, error.message);
+            sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 };
           }
         } else {
-          sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 }; // Default if no statistic_id
+          sentimentData.statistic = { positive: 0, negative: 0, neutral: 0 };
         }
 
-        // Count the positive, negative, and neutral comments
-        let positiveCount = 0;
-        let negativeCount = 0;
-        let neutralCount = 0;
-
-        if (sentimentData.comments.length > 0) {
-          sentimentData.comments.forEach((comment) => {
-            // Log the sentiment to understand the issue
-            console.log('Comment Sentiment:', comment.sentiment);
-
-            if (comment.sentiment === 'positive') {
-              positiveCount++;
-            } else if (comment.sentiment === 'negative') {
-              negativeCount++;
-            } else if (comment.sentiment === 'neutral') {
-              neutralCount++;
-            } else {
-              // Log unexpected sentiment values
-              console.warn(`Unknown sentiment value: ${comment.sentiment}`);
-            }
-          });
-        }
-
-        // Add the sentiment counts to the sentiment data
-        sentimentData.commentSentimentCounts = {
-          positive: positiveCount || 0, // Ensure count defaults to 0 if no positive comments
-          negative: negativeCount || 0, // Same for negative and neutral
-          neutral: neutralCount || 0,
+        return {
+          sentiment_id: sentimentData.sentiment_id,
+          sentiment_unique_id: sentimentData.sentiment_unique_id,
+          platform: sentimentData.platform,
+          sentiment_link: sentimentData.sentiment_link,
+          sentiment_created_at: sentimentData.sentiment_created_at,
+          statistic_id: sentimentData.statistic_id,
+          tags: sentimentData.tags,
+          statistic: sentimentData.statistic,
         };
-
-        return sentimentData;
       })
+    );
+
+
+    const validSentiments = sentimentsWithStatistics.filter((sentiment) => sentiment);
+
+    const statistics = await Promise.all(
+      sentimentRows.map(async (statistic) => {
+        if (!statistic.statistic_id) return null;
+        try {
+          const result = await getDocument('Statistic', statistic.statistic_id);
+          return result.data;
+        } catch (error) {
+          return null;
+        }
+      })
+    );
+
+    const filteredStatistics = statistics.filter((stat) => stat !== null);
+
+    const totalStatistics = filteredStatistics.reduce(
+      (totals, current) => {
+        totals.positive += current.positive || 0;
+        totals.negative += current.negative || 0;
+        totals.neutral += current.neutral || 0;
+        return totals;
+      },
+      { positive: 0, negative: 0, neutral: 0 }
     );
 
     res.status(200).json({
       status: 'success',
       data: {
         user: userData,
-        sentimentCount, // Include the sentiment count in the response
-        sentiments: sentimentsWithComments,
+        sentimentCount,
+        totalCommentsLimit, 
+        sentiments: validSentiments,
+        totalSentimentStatistics: totalStatistics,
       },
     });
   } catch (error) {
-    console.error('Error in dashboard handler:', error.message); // Log error for debugging
     res.status(500).json({
       status: 'fail',
       message: `Error: ${error.message}`,

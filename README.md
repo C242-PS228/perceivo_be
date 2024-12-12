@@ -46,6 +46,7 @@ Here are the API contracts for each section:
 - **[Profile API](./APIContract/Profile/README.md)** : Manages user profile data.
 - **[Sentiment API](./APIContract/Sentiment/README.md)** : Analyzes sentiment from comments or other data.
 - **[Tags API](./APIContract/Tags/README.md)** : Manages tags for organizing and categorizing data.
+- **[Dashboard API](./APIContract/Dashboard/README.md)** : Provides detailed documentation for endpoints that retrieve analytics on user and sentiment data.
 
 ---
 
