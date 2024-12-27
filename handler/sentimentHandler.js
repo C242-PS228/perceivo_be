@@ -10,11 +10,11 @@ import {
   getDocument,
   deleteDocument,
 } from './service/firestoreOperations.js';
-import apifyConnect from '../config/apifyConfig.js';
 import { nanoid } from 'nanoid';
+import apifyConnect from '../config/apifyConfig.js';
+import { io } from '../src/server.js';
 
 import tagsTrigger from './event/addTagsTrigger.js';
-
 /**
  * Handles /sentiment endpoint
  * @function
@@ -544,6 +544,137 @@ const createSentimentHandler = async (req, res) => {
   }
 };
 
+const createSentimentWithSocketHandler = async (req, res) => {
+  const socketId = req.headers['socket-id'];
+  const socket = io.sockets.sockets.get(socketId);
+  console.log(`socket : ${socket}, socketId: ${socketId}`);
+
+  if (!socket) {
+    return res.status(404).json({ error: 'Invalid Socket ID' });
+  }
+
+  const { title, link, platformName, resultLimit, tags } = req.body || {};
+  const user = req.user;
+  const localdate = formattedDate();
+  console.log(req.body);
+
+  if (!req.body) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Request body is missing or invalid',
+    });
+  }
+
+  socket.emit('process-update', {
+    step: 1,
+    message: 'Data received!',
+  });
+
+  try {
+    let uniqueId = nanoid(16);
+    console.log(uniqueId);
+    let isDuplicate = true;
+
+    while (isDuplicate) {
+      const [checkRows] = await pool.query(
+        'SELECT COUNT(*) as count FROM tb_sentiments WHERE unique_id = ?',
+        [uniqueId]
+      );
+      if (checkRows[0].count === 0) {
+        isDuplicate = false;
+      } else {
+        uniqueId = nanoid(16);
+      }
+    }
+
+    socket.emit('process-update', {
+      step: 2,
+      message: ['Get Comments Processing start!', link, platformName, title],
+      platformName: platformName,
+      title: title,
+    });
+
+    const describePlatform = platform.find(
+      (item) => item.name === platformName
+    );
+
+    if (!describePlatform) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Invalid platform name',
+      });
+    }
+
+    const input = inputConfig(platformName, link, resultLimit);
+    console.log(input);
+    const comments = await apifyConnect(input, describePlatform.actor);
+
+    if (!comments) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Comments not found!',
+      });
+    }
+
+    const filteredComments = filteredComment(describePlatform.name, comments);
+    const docRef = await addDocument('Comments', { filteredComments });
+    console.log(docRef);
+
+    if (filteredComments) {
+      socket.emit('process-update', {
+        step: 3,
+        message: ['Comments Processing complete!', link, platformName, title],
+      });
+    }
+
+    socket.emit('process-update', {
+      step: 4,
+      message: ['ML Processing start!', link, platformName, title],
+    });
+
+    const statistic_id = await PredictTrigger(filteredComments);
+    const formattedLinks = Array.isArray(link) ? link.join(', ') : link;
+
+    socket.emit('process-update', {
+      step: 5,
+      message: ['Saving data!', link, platformName, title],
+    });
+
+    const query =
+      'INSERT INTO tb_sentiments (unique_id, title, user_id, platform, sentiment_link, comments_id, comments_limit, statistic_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const [rows] = await pool.query(query, [
+      uniqueId,
+      title || null,
+      user.id,
+      describePlatform.name,
+      formattedLinks,
+      docRef,
+      comments.length,
+      statistic_id,
+      localdate,
+    ]);
+
+    if (Array.isArray(tags) && tags.length > 0) {
+      await tagsTrigger(tags, user, rows.insertId);
+    }
+
+    socket.emit('process-update', {
+      step: 6,
+      message: ['Processing Complete!', link, platformName, title],
+    });
+  } catch (e) {
+    socket.emit('process-update', {
+      step: 100,
+      message: [`Processing failed with error : ${e}`, link, platformName, title],
+    });
+  }
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Processing Complete!',
+  });
+};
+
 /**
  * Handles /sentiment/:id endpoint for deleting sentiment data
  * @function
@@ -602,6 +733,7 @@ const sentimentHandler = {
   showAllSentimentHandler,
   showSentimentHandler,
   createSentimentHandler,
+  createSentimentWithSocketHandler,
   showSentimentDetailsHandler,
   showSentimentCommentsHandler,
   showSentimentsWithPaginationHandler,

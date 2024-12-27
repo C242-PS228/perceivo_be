@@ -1,99 +1,105 @@
-import userHandler from "../handler/userHandler.js";
-import sentimentHandler from "../handler/sentimentHandler.js";
-import dashboardHandler from "../handler/dashboardHandler.js";
-import tagsHandler from "../handler/tagsHandler.js";
-import jwtAuthToken from "../middleware/jwtAuthToken.js";
-import validation from "../middleware/validation.js";
+import userHandler from '../handler/userHandler.js';
+import sentimentHandler from '../handler/sentimentHandler.js';
+import dashboardHandler from '../handler/dashboardHandler.js';
+import tagsHandler from '../handler/tagsHandler.js';
+import jwtAuthToken from '../middleware/jwtAuthToken.js';
+import validation from '../middleware/validation.js';
 
-import express from "express";
+import express from 'express';
 const route = express.Router();
 
-route.get("/", userHandler.baseUrlHandler);
+route.get('/', userHandler.baseUrlHandler);
 
 // Login Register Route
-route.post("/login", validation.loginInputValidation, userHandler.loginHandler);
+route.post('/login', validation.loginInputValidation, userHandler.loginHandler);
 
 route.post(
-  "/register",
+  '/register',
   validation.registerInputValidation,
   validation.passwordValidation,
   userHandler.registerHandler
 );
 
-route.get("/dashboard", jwtAuthToken, dashboardHandler);
+route.get('/dashboard', jwtAuthToken, dashboardHandler);
 
 // Auth Section Route
-route.get("/profile", jwtAuthToken, userHandler.profileHandler);
-route.put("/profile", jwtAuthToken, userHandler.updateProfileHandler);
+route.get('/profile', jwtAuthToken, userHandler.profileHandler);
+route.put('/profile', jwtAuthToken, userHandler.updateProfileHandler);
 route.put(
-  "/profile/changepassword",
+  '/profile/changepassword',
   jwtAuthToken,
   validation.passwordValidation,
   userHandler.changePasswordHandler
 );
 
 // Sentiment Section Route
-route.get("/sentiment", jwtAuthToken, sentimentHandler.showAllSentimentHandler);
+route.get('/sentiment', jwtAuthToken, sentimentHandler.showAllSentimentHandler);
 route.get(
-  "/sentiment/:id",
+  '/sentiment/:id',
   jwtAuthToken,
   sentimentHandler.showSentimentHandler
 );
 route.get(
-  "/sentiment/:id/all",
+  '/sentiment/:id/all',
   jwtAuthToken,
   sentimentHandler.showSentimentDetailsHandler
 );
 route.get(
-  "/sentiment/p/:limit",
+  '/sentiment/p/:limit',
   jwtAuthToken,
   sentimentHandler.showSentimentLimitHandler
 );
 route.get(
-  "/sentiment/p/:limit/:page",
+  '/sentiment/p/:limit/:page',
   jwtAuthToken,
   sentimentHandler.showSentimentsWithPaginationHandler
 );
 route.get(
-  "/sentiment/:id/comments",
+  '/sentiment/:id/comments',
   jwtAuthToken,
   sentimentHandler.showSentimentCommentsHandler
 );
 route.get(
-  "/sentiment/:id/statistic",
+  '/sentiment/:id/statistic',
   jwtAuthToken,
   sentimentHandler.showSentimentStatisticHandler
 );
 route.post(
-  "/sentiment",
+  '/sentiment',
   jwtAuthToken,
   validation.sentimentValidation,
   sentimentHandler.createSentimentHandler
 );
+route.post(
+  '/sentiment-socket',
+  jwtAuthToken,
+  validation.sentimentValidation,
+  sentimentHandler.createSentimentWithSocketHandler
+);
 route.delete(
-  "/sentiment/:id",
+  '/sentiment/:id',
   jwtAuthToken,
   sentimentHandler.deleteSentimentHandler
 );
 
 // Tags Section route
-route.get("/tags", jwtAuthToken, tagsHandler.showAllTagsHandler);
-route.get("/tags/:unique_id", jwtAuthToken, tagsHandler.showTagHandler);
+route.get('/tags', jwtAuthToken, tagsHandler.showAllTagsHandler);
+route.get('/tags/:unique_id', jwtAuthToken, tagsHandler.showTagHandler);
 route.post(
-  "/tags",
+  '/tags',
   jwtAuthToken,
   validation.tagNameValidation,
   tagsHandler.createTagHandler
 );
 route.put(
-  "/tags/:unique_id",
+  '/tags/:unique_id',
   jwtAuthToken,
   validation.tagNameValidation,
   tagsHandler.updateTagHandler
 );
-route.delete("/tags/:unique_id", jwtAuthToken, tagsHandler.deleteTagHandler);
+route.delete('/tags/:unique_id', jwtAuthToken, tagsHandler.deleteTagHandler);
 
 // ensure this route always last
-route.all("*", userHandler.missingUrlHandler);
+route.all('*', userHandler.missingUrlHandler);
 
 export default route;
