@@ -15,6 +15,7 @@ const connectedSockets = new Map();
 
 const io = new Server(server, {
   cors: {
+    // frontend endpoint || cors
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
     allowedHeaders: ['socket-id', 'Authorization', 'Content-Type'],
@@ -69,6 +70,10 @@ app.use(bodyParser.json());
 app.use(appVersion);
 
 // Routes
-app.use('/dev', route);
+// production route
+app.use(`/${process.env.APP_VERSION}`, route);
+
+// dev route
+// app.use('/dev', route);
 
 export { io };

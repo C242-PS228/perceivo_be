@@ -15,19 +15,22 @@ import apifyConnect from '../config/apifyConfig.js';
 import { io } from '../src/server.js';
 
 import tagsTrigger from './event/addTagsTrigger.js';
+
+
 /**
  * Handles /sentiment endpoint
  * @function
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with status, message, and data
+ * @returns {Object} JSON response with status, message, and sentiment data
  * @description
- * This endpoint is used to get all sentiment data for a user.
- * the data will be filtered by the user id in the request header.
+ * This endpoint is used to retrieve all sentiment data for a user.
+ * The data will be filtered by the user id in the request header.
+ * The response will contain the sentiment data sorted by the creation date in descending order.
  */
 const showAllSentimentHandler = async (req, res) => {
   const user = req.user;
-  const query = 'SELECT * FROM tb_sentiments WHERE user_id = ?';
+  const query = 'SELECT * FROM tb_sentiments WHERE user_id = ? ORDER BY created_at DESC';
   const [rows] = await pool.query(query, [user.id]);
 
   res.status(200).json({
@@ -36,8 +39,9 @@ const showAllSentimentHandler = async (req, res) => {
   });
 };
 
+
 /**
- * Handles /sentiment/:id endpoint for retrieving sentiment details
+ * Handles /sentiment/:id endpoint
  * @function
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -113,6 +117,18 @@ const showSentimentHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /sentiment/:id endpoint
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and sentiment data
+ * @description
+ * This endpoint retrieves detailed sentiment data for a specific sentiment ID.
+ * It includes the sentiment's platform, link, creation date, associated tags,
+ * and comments if available. The sentiment ID is provided in the request
+ * parameters, and the data is filtered by the user ID in the request header.
+ */
 const showSentimentDetailsHandler = async (req, res) => {
   const { id } = req.params; // Sentiment ID
   const user = req.user;
@@ -190,6 +206,18 @@ const showSentimentDetailsHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /sentiment/limit/:limit endpoint
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and sentiment data
+ * @description
+ * This endpoint retrieves a limited number of sentiment data for a user.
+ * The number of data to retrieve is specified in the request parameter `limit`.
+ * The data is filtered by the user ID in the request header.
+ * If the `limit` parameter is not a valid number, it will return an error response.
+ */
 const showSentimentLimitHandler = async (req, res) => {
   const { limit } = req.params;
   const user = req.user;
@@ -205,7 +233,7 @@ const showSentimentLimitHandler = async (req, res) => {
     }
 
     // Query dengan memasukkan `LIMIT` secara langsung
-    const query = 'SELECT * FROM tb_sentiments WHERE user_id = ? LIMIT ?';
+    const query = 'SELECT * FROM tb_sentiments WHERE user_id = ? ORDER BY created_at DESC LIMIT ?';
     const [rows] = await pool.query(query, [user.id, parsedLimit]);
 
     if (rows.length > 0) {
@@ -229,8 +257,22 @@ const showSentimentLimitHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /sentiment/limit/:limit/page/:page endpoint
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and sentiment data, along with pagination information
+ * @description
+ * This endpoint retrieves a limited number of sentiment data for a user, with pagination.
+ * The number of data to retrieve is specified in the request parameter `limit`.
+ * The page number is specified in the request parameter `page`.
+ * The data is filtered by the user ID in the request header.
+ * If the `limit` or `page` parameter is not a valid number, it will return an error response.
+ * The response will contain the sentiment data, along with pagination information, which includes the current page, data per page, total data, and total pages.
+ */
 const showSentimentsWithPaginationHandler = async (req, res) => {
-  const { limit, page } = req.params; // Limit: jumlah data per halaman, Page: halaman saat ini
+  const { limit, page } = req.params;
   const user = req.user;
 
   try {
@@ -269,6 +311,7 @@ const showSentimentsWithPaginationHandler = async (req, res) => {
         tb_tags t ON st.tag_id = t.id
       WHERE 
         s.user_id = ?
+      ORDER BY s.created_at DESC
       LIMIT ? OFFSET ?;
     `;
 
@@ -544,10 +587,22 @@ const createSentimentHandler = async (req, res) => {
   }
 };
 
+/**
+ * Handles /sentiment-socket endpoint for creating sentiment data with socket
+ * @function
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with status, message, and data
+ * @description
+ * This endpoint creates sentiment data for a specific user and link.
+ * It uses socket.io to emit events during the process (websocket).
+ * The link and platform will be provided in the request body.
+ * The data will be filtered by the user id in the request header.
+ * The response will contain the sentiment id and the filtered comments.
+ */
 const createSentimentWithSocketHandler = async (req, res) => {
   const socketId = req.headers['socket-id'];
   const socket = io.sockets.sockets.get(socketId);
-  console.log(`socket : ${socket}, socketId: ${socketId}`);
 
   if (!socket) {
     return res.status(404).json({ error: 'Invalid Socket ID' });
@@ -556,7 +611,6 @@ const createSentimentWithSocketHandler = async (req, res) => {
   const { title, link, platformName, resultLimit, tags } = req.body || {};
   const user = req.user;
   const localdate = formattedDate();
-  console.log(req.body);
 
   if (!req.body) {
     return res.status(400).json({
@@ -606,7 +660,6 @@ const createSentimentWithSocketHandler = async (req, res) => {
     }
 
     const input = inputConfig(platformName, link, resultLimit);
-    console.log(input);
     const comments = await apifyConnect(input, describePlatform.actor);
 
     if (!comments) {
@@ -618,7 +671,6 @@ const createSentimentWithSocketHandler = async (req, res) => {
 
     const filteredComments = filteredComment(describePlatform.name, comments);
     const docRef = await addDocument('Comments', { filteredComments });
-    console.log(docRef);
 
     if (filteredComments) {
       socket.emit('process-update', {
