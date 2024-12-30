@@ -29,6 +29,7 @@ const dashboardHandler = async (req, res) => {
       SELECT 
         s.id AS sentiment_id,
         s.unique_id AS sentiment_unique_id,
+        s.title,
         s.platform,
         s.sentiment_link,
         s.created_at AS sentiment_created_at,
