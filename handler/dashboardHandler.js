@@ -92,6 +92,7 @@ const dashboardHandler = async (req, res) => {
         return {
           sentiment_id: sentimentData.sentiment_id,
           sentiment_unique_id: sentimentData.sentiment_unique_id,
+          sentiment_title: sentimentData.title,
           platform: sentimentData.platform,
           sentiment_link: sentimentData.sentiment_link,
           sentiment_created_at: sentimentData.sentiment_created_at,
