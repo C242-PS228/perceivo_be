@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_ENDPOINT || 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: [
       'socket-id',
