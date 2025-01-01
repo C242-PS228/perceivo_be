@@ -170,6 +170,28 @@ const tagNameValidation = async (req, res, next) => {
   next();
 };
 
+const sentimentTitleValidation =  (req, res, next) => {
+  const { title } = req.body;
+
+  if (!title || (typeof title === 'string' && title.trim() === '')) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'title is required and must be a non-empty string',
+    });
+  }
+
+  // anti-XSS
+  if (req.body) {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = xss(req.body[key]);
+      }
+    }
+  }
+
+  next();
+};
+
 const sentimentValidation = (req, res, next) => {
   const { link, platformName } = req.body;
 
@@ -249,6 +271,6 @@ const passwordValidation = (req, res, next) => {
 };
 
 
-const validation = { registerInputValidation, loginInputValidation, sentimentValidation, passwordValidation, tagNameValidation };
+const validation = { registerInputValidation, loginInputValidation, sentimentValidation, passwordValidation, tagNameValidation, sentimentTitleValidation };
 
 export default validation;

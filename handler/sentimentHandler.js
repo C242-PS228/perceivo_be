@@ -780,6 +780,26 @@ const deleteSentimentHandler = async (req, res) => {
   }
 };
 
+const updateSentimentTitleHandler = async (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+
+  try {
+    const query = 'UPDATE tb_sentiments SET title = ? WHERE unique_id = ?';
+    const [rows] = await pool.query(query, [title, id]);
+
+    if (rows.affectedRows > 0) {
+      res.status(200).json({
+        status: 'success',
+        message: 'success update sentiment title data!',
+      });
+    }
+  // eslint-disable-next-line no-unused-vars
+  } catch (error) {
+    res.status(404).message('faile update sentiment title data!');
+  }
+};
+
 
 const sentimentHandler = {
   showAllSentimentHandler,
@@ -792,6 +812,7 @@ const sentimentHandler = {
   deleteSentimentHandler,
   showSentimentStatisticHandler,
   showSentimentLimitHandler,
+  updateSentimentTitleHandler
 };
 
 export default sentimentHandler;

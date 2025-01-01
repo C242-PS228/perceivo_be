@@ -81,6 +81,12 @@ route.delete(
   jwtAuthToken,
   sentimentHandler.deleteSentimentHandler
 );
+route.put(
+  '/sentiment/:id',
+  jwtAuthToken,
+  validation.sentimentTitleValidation,
+  sentimentHandler.updateSentimentTitleHandler
+);
 
 // Tags Section route
 route.get('/tags', jwtAuthToken, tagsHandler.showAllTagsHandler);

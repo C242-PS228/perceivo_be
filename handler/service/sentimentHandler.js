@@ -17,8 +17,6 @@ import {
 import firebaseConfig from '../config/firebaseConfig.js';
 import apifyConnect from '../config/apifyConfig.js';
 
-import { addDocument, getAllDocuments } from './service/firestoreOperations.js';
-
 import { nanoid } from 'nanoid';
 
 const firebaseApp = initializeApp(firebaseConfig);

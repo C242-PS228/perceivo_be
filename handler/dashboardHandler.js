@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+/* eslint-disable no-unused-vars */
 import pool from '../config/dbConfig.js';
 import { getDocument } from './service/firestoreOperations.js';
 
@@ -135,7 +137,7 @@ const dashboardHandler = async (req, res) => {
       data: {
         user: userData,
         sentimentCount,
-        totalCommentsLimit, 
+        totalCommentsLimit,
         sentiments: validSentiments,
         totalSentimentStatistics: totalStatistics,
       },
