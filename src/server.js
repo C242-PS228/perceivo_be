@@ -16,7 +16,7 @@ const connectedSockets = new Map();
 const io = new Server(server, {
   cors: {
     // frontend endpoint || cors
-    origin: process.env.FRONTEND_ENDPOINT || 'http://localhost:5173',
+    origin: [process.env.FRONTEND_ENDPOINT, 'http://localhost:5173'],
     methods: ['GET', 'POST'],
     allowedHeaders: ['socket-id', 'Authorization', 'Content-Type'],
     credentials: true,
@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_ENDPOINT || 'http://localhost:5173',
+    origin: [process.env.FRONTEND_ENDPOINT, 'http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: [
       'socket-id',
